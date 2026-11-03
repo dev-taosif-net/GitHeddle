@@ -6,8 +6,8 @@
 |---|---|
 | **প্রোডাক্ট** | GitHeddle — Windows, macOS আর Linux-এর জন্য একটা desktop app, যেটা দিয়ে একসাথে অনেকগুলো repo-র Git আর pull request-এর কাজ করা যায় |
 | **ডকুমেন্ট** | প্রোডাক্ট রিকোয়ারমেন্টস ডকুমেন্ট (PRD) |
-| **ভার্সন** | 0.4 — খসড়া (পরিবর্তন §১৬-এ) |
-| **তারিখ** | ২ নভেম্বর ২০২৬ |
+| **ভার্সন** | 0.5 — খসড়া (পরিবর্তন §১৬-এ) |
+| **তারিখ** | ৩ নভেম্বর ২০২৬ |
 | **দায়িত্বে** | Taosif |
 | **অবস্থা** | খসড়া। যেসব অনুমান এখনো নিশ্চিত করা বাকি, সেগুলো §১৪-এ আছে |
 
@@ -35,12 +35,12 @@ GitHeddle VS Code-এর ভেতরে না, পাশে থেকে ক�
 
 এখন যেখানে কষ্ট হয়:
 
-১. **প্রতিটা ধাপ প্রতিটা repo-তে আলাদা করে করতে হয়।** Branch তৈরি, commit, push, `dev` pull আর merge — সবই হাতে, প্রতিটা repository-তে একবার করে। এসব হয় একটা লম্বা Source Control list-এ, যেখানে প্রতিটা repo-র নিজস্ব message box আর Commit button।
-২. **এক নজরে কিছু দেখা যায় না।** কোন repo কোন branch-এ, কোনটা `dev`-এর পেছনে, কোনটায় push না করা commit আছে, কোনটা merge-এর মাঝপথে — panel-টা এগুলো পাশাপাশি দেখাতে পারে না। Screenshot-এ `app-api` এখন `dev`-এ, `TK-2636-taosif-Onboarding` merge করার মাঝপথে, ৩টা conflicted file সহ (শুধু `Api.csproj`-এই ৬টা conflict)। অন্য repo-তে কাজ করার সময় এটা সহজেই চোখ এড়িয়ে যায়।
-৩. **Pull request একটা একটা করে browser-এ বানাতে হয়।** প্রতিটা repository-র জন্য GitHub খুলতে হয়, branch বাছতে হয়, একই title আর description লিখতে হয়, reviewer যোগ করতে হয়। তারপর reviewer-রা যেন বোঝেন pull request-গুলো একসাথের, সেজন্য একটার link আরেকটায় হাতে copy করতে হয়।
-৪. **Conflict ছড়িয়ে-ছিটিয়ে থাকে।** `dev` এগিয়ে গেলে প্রতিটা repo আলাদা করে sync করতে হয়, আর তার conflict আলাদা করে খুঁজে resolve করতে হয়।
-৫. **একই ধাপের ক্রম প্রতিদিন বারবার।** যেমন: সর্বশেষ `main` current branch-এ আনা, push করা, তারপর `dev`-এ merge করা বা pull request খোলা — ধাপে ধাপে, প্রতিটা repo-তে।
-৬. **ভুল করা সহজ।** ভুল করে `dev`-এ commit হয়ে যায়, একটা repo বাদ পড়ে যায়, একটা repo push হয় কিন্তু আরেকটা হয় না, বা কোনো repo ভুল branch-এ থেকে যায়।
+1. **প্রতিটা ধাপ প্রতিটা repo-তে আলাদা করে করতে হয়।** Branch তৈরি, commit, push, `dev` pull আর merge — সবই হাতে, প্রতিটা repository-তে একবার করে। এসব হয় একটা লম্বা Source Control list-এ, যেখানে প্রতিটা repo-র নিজস্ব message box আর Commit button।
+2. **এক নজরে কিছু দেখা যায় না।** কোন repo কোন branch-এ, কোনটা `dev`-এর পেছনে, কোনটায় push না করা commit আছে, কোনটা merge-এর মাঝপথে — panel-টা এগুলো পাশাপাশি দেখাতে পারে না। Screenshot-এ `app-api` এখন `dev`-এ, `TK-2636-taosif-Onboarding` merge করার মাঝপথে, ৩টা conflicted file সহ (শুধু `Api.csproj`-এই ৬টা conflict)। অন্য repo-তে কাজ করার সময় এটা সহজেই চোখ এড়িয়ে যায়।
+3. **Pull request একটা একটা করে browser-এ বানাতে হয়।** প্রতিটা repository-র জন্য GitHub খুলতে হয়, branch বাছতে হয়, একই title আর description লিখতে হয়, reviewer যোগ করতে হয়। তারপর reviewer-রা যেন বোঝেন pull request-গুলো একসাথের, সেজন্য একটার link আরেকটায় হাতে copy করতে হয়।
+4. **Conflict ছড়িয়ে-ছিটিয়ে থাকে।** `dev` এগিয়ে গেলে প্রতিটা repo আলাদা করে sync করতে হয়, আর তার conflict আলাদা করে খুঁজে resolve করতে হয়।
+5. **একই ধাপের ক্রম প্রতিদিন বারবার।** যেমন: সর্বশেষ `main` current branch-এ আনা, push করা, তারপর `dev`-এ merge করা বা pull request খোলা — ধাপে ধাপে, প্রতিটা repo-তে।
+6. **ভুল করা সহজ।** ভুল করে `dev`-এ commit হয়ে যায়, একটা repo বাদ পড়ে যায়, একটা repo push হয় কিন্তু আরেকটা হয় না, বা কোনো repo ভুল branch-এ থেকে যায়।
 
 ফলাফল: ২–৩টা repository-তে ছড়ানো একটা feature-এর জন্য প্রতিদিন অনেকটা সময় যায় একই Git কাজ বারবার করতে, আর এমন ভুল হয় যা এড়ানো যেত।
 
@@ -97,11 +97,11 @@ GitHeddle VS Code-এর ভেতরে না, পাশে থেকে ক�
 
 ### Flow ০ — প্রথমবার চালানো
 
-১. GitHeddle install করে খুলুন।
-২. একটা folder বা একটা VS Code `.code-workspace` file বেছে নিন। GitHeddle যে repository-গুলো খুঁজে পায় তার তালিকা দেখাবে।
-৩. Branch-এর নামে যে ছোট নাম বসবে (`taosif`, Git config থেকে প্রস্তাব করা) আর default base branch (`dev`) নিশ্চিত করুন।
-৪. এক click-এ browser-এ GitHub-এ sign in করুন, কোনো token copy করতে হবে না। এই ধাপ বাদ দিয়ে পরেও করা যায়।
-৫. Dashboard খুলে যাবে। পুরো setup-এ ২ মিনিটের কম লাগবে।
+1. GitHeddle install করে খুলুন।
+2. একটা folder বা একটা VS Code `.code-workspace` file বেছে নিন। GitHeddle যে repository-গুলো খুঁজে পায় তার তালিকা দেখাবে।
+3. Branch-এর নামে যে ছোট নাম বসবে (`taosif`, Git config থেকে প্রস্তাব করা) আর default base branch (`dev`) নিশ্চিত করুন।
+4. এক click-এ browser-এ GitHub-এ sign in করুন, কোনো token copy করতে হবে না। এই ধাপ বাদ দিয়ে পরেও করা যায়।
+5. Dashboard খুলে যাবে। পুরো setup-এ ২ মিনিটের কম লাগবে।
 
 ### Flow ১ — Task শুরু করা
 
@@ -109,24 +109,24 @@ GitHeddle VS Code-এর ভেতরে না, পাশে থেকে ক�
 
 *GitHeddle দিয়ে:*
 
-১. **Start Task**-এ click করুন (বা Ctrl+N / ⌘N চাপুন), তারপর `TK-2636` আর `Onboarding` লিখুন।
-২. Repo বাছাই করুন (অথবা একটা group)। Base branch default-ভাবে `dev`।
-৩. Preview বলবে, `app-api` আর `app-front`-এ সর্বশেষ `origin/dev` থেকে `TK-2636-taosif-Onboarding` তৈরি হবে। ধরুন `app-front`-এ uncommitted change আছে — তখন preview জিজ্ঞেস করবে: "Stash and continue" নাকি "Skip this repo"।
-৪. চালান। ফলাফল: ✓ `app-api`, ✓ `app-front`। Top bar-এ active task দেখাবে।
+1. **Start Task**-এ click করুন (বা Ctrl+N / ⌘N চাপুন), তারপর `TK-2636` আর `Onboarding` লিখুন।
+2. Repo বাছাই করুন (অথবা একটা group)। Base branch default-ভাবে `dev`।
+3. Preview বলবে, `app-api` আর `app-front`-এ সর্বশেষ `origin/dev` থেকে `TK-2636-taosif-Onboarding` তৈরি হবে। ধরুন `app-front`-এ uncommitted change আছে — তখন preview জিজ্ঞেস করবে: "Stash and continue" নাকি "Skip this repo"।
+4. চালান। ফলাফল: ✓ `app-api`, ✓ `app-front`। Top bar-এ active task দেখাবে।
 
 ### Flow ২ — Change দেখা, তারপর একসাথে commit আর push
 
-১. **Changes** screen খুলুন। এটা দেখতে VS Code-এর Source Control-এর মতো: change আছে এমন প্রতিটা repo-র নিজস্ব অংশ, যেটা Merge Changes, Staged Changes আর Changes — এই তিন ভাগে বিভক্ত। প্রতিটা file-এর পাশে তার folder, একটা status অক্ষর (M, A, D, R, U, !) আর কয়টা line যোগ ও বাদ হয়েছে তা দেখা যায়।
-২. কোনো file-এ click করলে তার diff দেখা যাবে। Row-এর + / − button দিয়ে file stage বা unstage করুন।
-৩. একটাই box-এ একটাই message লিখুন, আগে থেকে `TK-2636: ` বসানো।
-৪. সব repo-তে একসাথে commit, চাইলে সাথে সাথে push। যে repo-তে কিছু stage করা নেই সেটা বাদ।
+1. **Changes** screen খুলুন। এটা দেখতে VS Code-এর Source Control-এর মতো: change আছে এমন প্রতিটা repo-র নিজস্ব অংশ, যেটা Merge Changes, Staged Changes আর Changes — এই তিন ভাগে বিভক্ত। প্রতিটা file-এর পাশে তার folder, একটা status অক্ষর (M, A, D, R, U, !) আর কয়টা line যোগ ও বাদ হয়েছে তা দেখা যায়।
+2. কোনো file-এ click করলে তার diff দেখা যাবে। Row-এর + / − button দিয়ে file stage বা unstage করুন।
+3. একটাই box-এ একটাই message লিখুন, আগে থেকে `TK-2636: ` বসানো।
+4. সব repo-তে একসাথে commit, চাইলে সাথে সাথে push। যে repo-তে কিছু stage করা নেই সেটা বাদ।
 
 ### Flow ৩ — Pull request তৈরি
 
-১. Task-এ **Create Pull Requests**-এ click করুন।
-২. Preview-তে প্রতিটা repo-র জন্য দেখাবে: source → target (`TK-2636-taosif-Onboarding → dev`), কয়টা commit এগিয়ে, title `TK-2636: Onboarding`, template থেকে description, reviewer, draft হবে কি না। যেসব repo-তে এগিয়ে থাকা commit নেই সেগুলো বাদ। সবকিছু edit করা যাবে।
-৩. Create করুন। দরকার হলে GitHeddle branch push করে pull request তৈরি করবে। তারপর প্রতিটা description-এ "Related pull requests" অংশ যোগ করবে, যেখানে বাকিগুলোর link থাকবে।
-৪. Task screen-এ এখন প্রতিটা pull request তার CI আর review-এর অবস্থা সহ দেখাবে।
+1. Task-এ **Create Pull Requests**-এ click করুন।
+2. Preview-তে প্রতিটা repo-র জন্য দেখাবে: source → target (`TK-2636-taosif-Onboarding → dev`), কয়টা commit এগিয়ে, title `TK-2636: Onboarding`, template থেকে description, reviewer, draft হবে কি না। যেসব repo-তে এগিয়ে থাকা commit নেই সেগুলো বাদ। সবকিছু edit করা যাবে।
+3. Create করুন। দরকার হলে GitHeddle branch push করে pull request তৈরি করবে। তারপর প্রতিটা description-এ "Related pull requests" অংশ যোগ করবে, যেখানে বাকিগুলোর link থাকবে।
+4. Task screen-এ এখন প্রতিটা pull request তার CI আর review-এর অবস্থা সহ দেখাবে।
 
 ### Flow ৪ — `dev`-এর সাথে তাল মেলানো, অথবা `dev`-এ merge
 
@@ -137,17 +137,17 @@ GitHeddle VS Code-এর ভেতরে না, পাশে থেকে ক�
 
 ### Flow ৫ — Conflict resolve
 
-১. Conflicts screen-এ merge বা rebase-এর মাঝপথে থাকা প্রতিটা repo দেখাবে, তার conflicted file আর প্রতিটা file-এ কয়টা conflict।
-২. একটা file-এ click করুন। সেটা GitHeddle-এর merge editor-এ খুলবে, যেখানে Visual Studio-র মতো তিনটা pane: বামে **Incoming** (যে branch merge হয়ে আসছে), ডানে **Current** (আপনি যে branch-এ আছেন) আর নিচে **Result** (যে file সেভ হবে)।
-৩. প্রতিটা conflict-এ Incoming দিক, Current দিক, অথবা দুটোতেই টিক দিন। Result pane সাথে সাথে update হয়, আর হাতেও edit করা যায়। যেসব change-এ conflict নেই, সেগুলো আগে থেকেই Result-এ বসানো।
-৪. Next / Previous দিয়ে এক conflict থেকে আরেকটায় যান। আর কোনোটা বাকি না থাকলে **Accept merge**-এ click করুন। File সেভ হবে, resolved চিহ্নিত হবে, আর পরের conflicted file খুলে যাবে।
-৫. কোনো repo-তে আর conflict না থাকলে: Continue (merge commit করা) অথবা Abort। সব repo পরিষ্কার হলে: **Continue all**।
+1. Conflicts screen-এ merge বা rebase-এর মাঝপথে থাকা প্রতিটা repo দেখাবে, তার conflicted file আর প্রতিটা file-এ কয়টা conflict।
+2. একটা file-এ click করুন। সেটা GitHeddle-এর merge editor-এ খুলবে, যেখানে Visual Studio-র মতো তিনটা pane: বামে **Incoming** (যে branch merge হয়ে আসছে), ডানে **Current** (আপনি যে branch-এ আছেন) আর নিচে **Result** (যে file সেভ হবে)।
+3. প্রতিটা conflict-এ Incoming দিক, Current দিক, অথবা দুটোতেই টিক দিন। Result pane সাথে সাথে update হয়, আর হাতেও edit করা যায়। যেসব change-এ conflict নেই, সেগুলো আগে থেকেই Result-এ বসানো।
+4. Next / Previous দিয়ে এক conflict থেকে আরেকটায় যান। আর কোনোটা বাকি না থাকলে **Accept merge**-এ click করুন। File সেভ হবে, resolved চিহ্নিত হবে, আর পরের conflicted file খুলে যাবে।
+5. কোনো repo-তে আর conflict না থাকলে: Continue (merge commit করা) অথবা Abort। সব repo পরিষ্কার হলে: **Continue all**।
 
 ### Flow ৬ — Review, merge আর task শেষ করা
 
-১. Pull Requests screen-এ তিনটা তালিকা: আমার তৈরি, আমার কাছে review চাওয়া, আর বর্তমান task।
-২. Task-এর pull request-গুলোতে একসাথে কাজ: ready for review করা, reviewer যোগ করা, আর merge (check pass করলে আর review approve হলে) — বাছাই করা ক্রমে, যেমন `app-api` আগে, `app-front` পরে।
-৩. **Finish Task** repo-গুলোকে `dev`-এ ফেরত নেয়, pull করে, local task branch delete করে (remote branch delete ঐচ্ছিক), আর task-টা archive করে।
+1. Pull Requests screen-এ তিনটা তালিকা: আমার তৈরি, আমার কাছে review চাওয়া, আর বর্তমান task।
+2. Task-এর pull request-গুলোতে একসাথে কাজ: ready for review করা, reviewer যোগ করা, আর merge (check pass করলে আর review approve হলে) — বাছাই করা ক্রমে, যেমন `app-api` আগে, `app-front` পরে।
+3. **Finish Task** repo-গুলোকে `dev`-এ ফেরত নেয়, pull করে, local task branch delete করে (remote branch delete ঐচ্ছিক), আর task-টা archive করে।
 
 ### Flow ৭ — প্রতিদিনের bulk কাজ
 
@@ -158,11 +158,11 @@ GitHeddle VS Code-এর ভেতরে না, পাশে থেকে ক�
 
 ### Flow ৮ — Pipeline বানানো আর চালানো
 
-১. **Pipelines** → **New pipeline** খুলে নাম দিন `Update from main → dev`।
-২. ধাপগুলো যোগ করুন: **Fetch** → **Update from branch** `main` (merge) → **Push** → **Integrate into branch** `dev`, পদ্ধতি **merge**। এর বদলে `dev`-এ pull request খুলতে চাইলে শেষ ধাপে পদ্ধতি হিসেবে **pull request** বেছে নিন।
-৩. Save করুন। Pipeline-টা এখন sidebar আর command palette-এ দেখা যাবে।
-৪. **Run**-এ click করে target বেছে নিন, যেমন task `TK-2636`। Preview-তে `app-api` আর `app-front`-এর প্রতিটা ধাপ দেখাবে, আর পুরো run-এর জন্য একটাই প্রশ্ন করবে: "This run pushes to the protected branch `dev` in 2 repos. Continue?"
-৫. চালান। `app-front` সব ধাপ শেষ করে। `app-api` "Update from main" ধাপে ৩টা conflicted file নিয়ে থেমে যায়। Merge editor-এ সেগুলো resolve করুন (Flow ৫), **Resume**-এ click করুন, তাহলে `app-api`-ও শেষ হবে।
+1. **Pipelines** → **New pipeline** খুলে নাম দিন `Update from main → dev`।
+2. ধাপগুলো যোগ করুন: **Fetch** → **Update from branch** `main` (merge) → **Push** → **Integrate into branch** `dev`, পদ্ধতি **merge**। এর বদলে `dev`-এ pull request খুলতে চাইলে শেষ ধাপে পদ্ধতি হিসেবে **pull request** বেছে নিন।
+3. Save করুন। Pipeline-টা এখন sidebar আর command palette-এ দেখা যাবে।
+4. **Run**-এ click করে target বেছে নিন, যেমন task `TK-2636`। Preview-তে `app-api` আর `app-front`-এর প্রতিটা ধাপ দেখাবে, আর পুরো run-এর জন্য একটাই প্রশ্ন করবে: "This run pushes to the protected branch `dev` in 2 repos. Continue?"
+5. চালান। `app-front` সব ধাপ শেষ করে। `app-api` "Update from main" ধাপে ৩টা conflicted file নিয়ে থেমে যায়। Merge editor-এ সেগুলো resolve করুন (Flow ৫), **Resume**-এ click করুন, তাহলে `app-api`-ও শেষ হবে।
 
 ## ৭. Functional requirement
 
@@ -282,22 +282,24 @@ Priority: **P0** = প্রথম release (MVP), **P1** = পরের release,
 |---|---|---|
 | CFG-01 | Setting: branch name pattern, user-এর ছোট নাম (`taosif`), default base branch, protected branch, parallel সীমা, sync পদ্ধতি (merge বা rebase), pull request-এর title আর body template, group অনুযায়ী default reviewer, background fetch interval, কোন editor, terminal আর merge tool খুলবে (default: VS Code আর system-এর terminal), theme। | P0 |
 | CFG-02 | Repo অনুযায়ী আলাদা setting, যেমন কোনো repo-র base branch `dev` না হয়ে `main`। | P0 |
-| CFG-03 | Workspace-এ ঐচ্ছিক team config file (`.githeddle.json`), যেখানে shared group, pattern, template আর pipeline থাকবে। | P1 |
+| CFG-03 | Workspace-এ ঐচ্ছিক team config file (`.githeddle.json`), যেখানে shared group, pattern, template আর pipeline থাকবে। এটা repository থেকে আসে বলে এতে চালানোর মতো কোনো program-এর নাম (editor, terminal, merge tool) বা Run Git command ধাপ রাখা যাবে না, আর এতে কোনো বদল user approve করার পরেই কার্যকর হবে। | P1 |
 
 ### J. Platform আর installation
 
 | ID | চাহিদা | Priority |
 |---|---|---|
-| PLAT-01 | চলবে Windows 10 আর 11-এ (x64 আর ARM64), macOS 13 বা নতুনে (Apple Silicon আর Intel), আর Linux x64-এ (Ubuntu 22.04 বা নতুন, Fedora 39 বা নতুন, আর এই ধরনের অন্য distribution)। | P0 |
+| PLAT-01 | চলবে Windows 10 আর 11-এ (x64 আর ARM64), macOS 13.3 বা নতুনে (Apple Silicon আর Intel; UI-র যে Safari 16.4 webview লাগে সেটা আসে 13.3-এ, দেখুন ADR 0001), আর Linux x64-এ (Ubuntu 22.04 বা নতুন, Fedora 39 বা নতুন, আর এই ধরনের অন্য distribution)। | P0 |
 | PLAT-02 | Installer: Windows-এর জন্য `.exe` installer, যেটা admin অধিকার ছাড়াই শুধু ওই user-এর জন্য install হয়; macOS-এর জন্য `.dmg`; Linux-এর জন্য AppImage আর `.deb`। | P0 |
 | PLAT-03 | প্রতিটা feature তিনটা system-এ একইভাবে কাজ করবে। Platform-এর পার্থক্যগুলো user না, app নিজে সামলাবে: path, line ending, বড়-ছোট হাতের অক্ষর আলাদা ধরা file-এর নাম, shell আর credential helper। | P0 |
 | PLAT-04 | প্রতিটা release বের হওয়ার আগে তিনটা system-এই test হবে। | P0 |
 | PLAT-05 | Keyboard shortcut প্রতিটা system-এর নিয়ম মানবে: Windows আর Linux-এ Ctrl, macOS-এ ⌘। | P0 |
 | PLAT-06 | Light আর dark theme, default-ভাবে system-এর setting অনুযায়ী। | P0 |
 | PLAT-07 | Automatic update: app নতুন version আছে কি না দেখবে, কী বদলেছে দেখাবে, আর restart-এর সময় install করবে — কখনো কোনো operation-এর মাঝখানে না। | P1 |
-| PLAT-08 | Windows-এ signed installer আর macOS-এ notarised app, যাতে system-গুলো "unknown developer" সতর্কবার্তা না দেখায়। | P1 |
+| PLAT-08 | Windows-এ signed installer, যাতে SmartScreen "unknown publisher" সতর্কবার্তা না দেখায়। | P1 |
 | PLAT-09 | Linux-এর জন্য `.rpm` package। | P1 |
 | PLAT-10 | Linux ARM64 build। | P2 |
+| PLAT-11 | Notarised macOS app (Developer ID), যাতে Gatekeeper কোনো সতর্কবার্তা না দেখায়। এর জন্য টাকা দিয়ে Apple Developer account লাগে, যেটা project-এর এখনো নেই। ততদিন macOS build ad-hoc signed থাকবে। | P2 |
+| PLAT-12 | যতদিন কোনো installer unsigned বা notarised নয়, ততদিন একটা install guide থাকবে, download page আর প্রতিটা release থেকে যার link দেওয়া। Guide-টা ধাপে ধাপে বলে দেবে প্রতিটা system-এর সতর্কবার্তা পার হয়ে কীভাবে app খুলতে হয়: Windows-এ SmartScreen-এর "Run anyway", macOS-এ Privacy & Security-র "Open Anyway", আর download করা file `SHA256SUMS`-এর সাথে কীভাবে মিলিয়ে দেখতে হয়। | P0 |
 
 ### K. গতি
 
@@ -508,30 +510,24 @@ Sync task TK-2636 with dev — finished in 4.2 s
 | **Transparency** | চালানো প্রতিটা Git command activity log-এ দেখা যাবে। GitHeddle এমন কিছু করবে না যা user terminal-এ নিজে করতে পারতেন না। |
 | **ভাষা** | প্রথম release-এ UI ইংরেজিতে (খোলা প্রশ্ন ৭)। |
 
-## ১০. Technical approach (প্রস্তাবিত)
+## ১০. Technical approach
 
 | অংশ | প্রস্তাব |
 |---|---|
-| App | একটাই codebase, যেটা থেকে Windows, macOS আর Linux-এর native desktop app build হবে। কোন technology, তা এখনো ঠিক হয়নি (প্রশ্ন ৯); নিচে option-গুলোর তুলনা আছে। |
+| App | একটাই codebase, যেটা থেকে Windows, macOS আর Linux-এর native desktop app build হবে। Technology হলো Tauri 2 (প্রশ্ন ৯, [ADR 0001](../decisions/0001-tech-stack.bn.md))। |
 | Git operation | প্রতিটা repo-তে user-এর নিজের `git` CLI চালানো, যাতে আচরণ, credential আর hook terminal-এর মতোই হয়। UI thread-এর বাইরে একটা job runner parallel সীমা, cancel আর প্রতিটা repo-র ফলাফল সামলাবে। |
 | Repo-র অবস্থা | সরাসরি Git থেকে পড়া (যেমন `git status --porcelain=v2 --branch`), file system-এর বদল নজরে রাখা, আর শেষ জানা অবস্থা disk-এ cache করে রাখা, যাতে চালু হওয়ার সাথে সাথে dashboard দেখা যায়। |
-| Diff আর merge | Changes screen, diff view আর merge editor — তিনটার জন্য একটাই shared diff engine। Merge editor একটা conflicted file-এর তিনটা version সরাসরি Git থেকে নেয় (index stage 1, 2 আর 3: base, current আর incoming), ফলে এর ফলাফল সবসময় Git যা করত তার সাথে মেলে। |
+| Diff আর merge | Changes screen, diff view আর merge editor — তিনটার জন্য একটাই shared diff engine। Merge editor একটা conflicted file-এর তিনটা version সরাসরি Git থেকে নেয় (index stage 1, 2 আর 3), আর conflict-এর অংশগুলো নেয় Git file-এর ভেতরে যে marker লিখেছে সেখান থেকে, ফলে এর ফলাফল সবসময় Git যা করেছে তার সাথে মেলে। কোন stage Current আর কোনটা Incoming হিসেবে দেখানো হবে, সেটা নির্ভর করে কাজটা merge, rebase নাকি cherry-pick তার ওপর (architecture ডকুমেন্ট দেখুন)। |
 | Pipeline | Data হিসেবে সেভ থাকে: ধাপের একটা ক্রমিক তালিকা, প্রতিটার setting সহ। Bulk action-এর একই job runner-এ চলে। প্রতিটা repo-র run একটা ছোট state machine, যেটা থামতে আর আবার চলতে পারে, আর তার অবস্থা disk-এ সেভ থাকে, ফলে app restart-এর পরেও থেমে থাকা run টিকে থাকে। |
 | GitHub | Sign in-এর জন্য OAuth device flow, আর GitHub REST ও GraphQL API। GraphQL দিয়ে এক request-এ অনেক pull request-এর status আনা যায়। |
-| Storage | Setting, workspace, group, task আর pipeline থাকবে app-এর data folder-এ, প্রতিটা system-এর প্রচলিত জায়গায় (Windows-এ `%APPDATA%`, macOS-এ `~/Library/Application Support`, Linux-এ `~/.config`)। ঐচ্ছিক team file `.githeddle.json` থাকবে workspace-এ। Token থাকবে system keychain-এ। |
+| Storage | Setting, workspace, group, task আর pipeline থাকবে app-এর config folder-এ, প্রতিটা system-এর প্রচলিত জায়গায় (Windows-এ `%APPDATA%`, macOS-এ `~/Library/Application Support`, Linux-এ `~/.config`)। State cache, pipeline journal আর log থাকবে local data folder-এ (Windows-এ `%LOCALAPPDATA%`, Linux-এ `$XDG_DATA_HOME`); বিস্তারিত আছে architecture ডকুমেন্টে। ঐচ্ছিক team file `.githeddle.json` থাকবে workspace-এ। Token থাকবে system keychain-এ। |
 | Editor আর tool | Default-ভাবে `code` command দিয়ে repo আর file VS Code-এ খোলা। Editor, terminal আর বাইরের merge tool setting-এ বদলানো যাবে। |
 | Hosting provider | একটা provider interface (pull request তৈরি, তালিকা, update, merge; check আর review পড়া), যাতে পরে বাকি অংশ না বদলেই GitLab বা Azure DevOps যোগ করা যায়। |
-| Update (v0.2) | Signed update package। কোথায় publish হবে, তা এখনো ঠিক হয়নি (প্রশ্ন ৬)। |
+| Update (v0.2) | Signed update package, publish হবে GitHub Releases-এ (প্রশ্ন ৬)। Updater কীভাবে কাজ করে, তা আছে [build ও release](../engineering/build-and-release.bn.md) ডকুমেন্টে। |
 
-### Technology option
+### Technology-র সিদ্ধান্ত
 
-| Option | সুবিধা | অসুবিধা |
-|---|---|---|
-| **Tauri 2** (Rust core + web UI) | খুব ছোট installer (কয়েক MB), দ্রুত চালু হয় আর কম memory লাগে। Web UI তাড়াতাড়ি বানানো আর সাজানো যায়। | লেখক আগে থেকে Rust ব্যবহার না করলে এটা নতুন ভাষা। প্রতিটা system-এর built-in webview একটু আলাদা আচরণ করে, তাই UI তিনটাতেই test করতে হবে। |
-| **Avalonia** (C# / .NET) | লেখক আগে থেকেই C# / .NET-এ কাজ করেন (`app-api`)। Native rendering তিনটা system-এ একই রকম দেখায়, আর performance ভালো। | তৈরি UI component কম। Self-contained .NET app-এর installer বড় হয় (কয়েক দশ MB)। |
-| **Electron** (Node.js + web UI) | সবচেয়ে বড় ecosystem, আর প্রতিটা system-এ একই Chromium। | বড় installer (প্রায় ১০০ MB বা বেশি) আর বেশি memory লাগে, যা "খুব fast"-এর বিপক্ষে যায়। |
-
-**সুপারিশ:** "খুব fast" আর "ছোট"-এর সাথে Tauri 2 সবচেয়ে ভালো মেলে। C#-এ থাকা বেশি গুরুত্বপূর্ণ হলে Avalonia ভালো বিকল্প। Development শুরুর আগে ঠিক করতে হবে (প্রশ্ন ৯)।
+সিদ্ধান্তটা লেখা আছে [ADR 0001](../decisions/0001-tech-stack.bn.md)-এ। পাঁচ agent-এর একটা review panel সর্বসম্মত vote দিয়ে এটা ঠিক করেছে: **Tauri 2, Rust core আর React + TypeScript UI**। Fallback হলো Electron। [Roadmap](../plan/roadmap.bn.md)-এর M1 go/no-go gate তিনটা system-এই পার হলে সিদ্ধান্তটা চূড়ান্ত হবে। ওপরের table-এর প্রতিটা অংশ কীভাবে তৈরি হবে, সেটা আছে [architecture](../architecture/architecture.bn.md) ডকুমেন্টে।
 
 ## ১১. সাফল্যের মাপকাঠি
 
@@ -555,8 +551,8 @@ Sync task TK-2636 with dev — finished in 4.2 s
 | Release | কী থাকবে |
 |---|---|
 | **v0.1 — MVP** | সব P0 চাহিদা: dashboard, group, diff আর commit সহ VS Code-এর ধাঁচের Changes screen, bulk operation, Start আর Switch Task, Sync with Base, Merge Task Into…, তিন pane-ওয়ালা merge editor সহ Conflicts screen, আগে থেকে বানানোগুলো সহ pipeline, related link সহ pull request তৈরি, task-এর pull request status, নিরাপত্তার নিয়ম, setting, তিনটা system-এর installer, আর গতি ও সহজে ব্যবহারের চাহিদাগুলো। |
-| **v0.2** | সব P1 চাহিদা: merge editor-এ Base view, pipeline-এর ধাপের option, shortcut, share আর run history, automatic update, signed installer, `.rpm` package, Pull Requests screen, pull request-গুলো একসাথে update আর merge, Finish Task, undo, commit history, আরও operation, Run Git command, team config file, repo-র pull request template, কয়েকটা workspace, built-in help। |
-| **v0.3 এবং পরে** | P2 চাহিদা আর নতুন host: line ধরে stage, আরও ধরনের pipeline ধাপ, review flow, notification, Conventional Commits, Linux ARM64, GitLab আর Azure DevOps, issue tracker থেকে ticket title আনা, AI দিয়ে লেখা pull request description। |
+| **v0.2** | সব P1 চাহিদা: merge editor-এ Base view, pipeline-এর ধাপের option, shortcut, share আর run history, automatic update, signed Windows installer, `.rpm` package, Pull Requests screen, pull request-গুলো একসাথে update আর merge, Finish Task, undo, commit history, আরও operation, Run Git command, team config file, repo-র pull request template, কয়েকটা workspace, built-in help। |
+| **v0.3 এবং পরে** | P2 চাহিদা আর নতুন host: line ধরে stage, আরও ধরনের pipeline ধাপ, review flow, notification, Conventional Commits, Linux ARM64, Apple Developer account হলে notarised macOS app, GitLab আর Azure DevOps, issue tracker থেকে ticket title আনা, AI দিয়ে লেখা pull request description। |
 
 **v0.1 শেষ ধরা হবে যখন** লেখক ২টা repo-তে ছড়ানো একটা আসল ticket শুধু GitHeddle আর একটা editor দিয়ে Start Task থেকে pull request তৈরি পর্যন্ত নিয়ে যেতে পারবেন — যার মধ্যে অন্তত একটা conflict merge editor-এ resolve করা আর একবার একটা সেভ করা pipeline চালানো থাকবে; একই flow-গুলো macOS আর Linux-এর test machine-এ pass করবে; আর তিনটা system-এই চালু হওয়া আর dashboard-এর লক্ষ্য (PERF-01, PERF-02) পূরণ হবে।
 
@@ -566,7 +562,7 @@ Sync task TK-2636 with dev — finished in 4.2 s
 |---|---|
 | তিনটা system মানে তিন গুণ test | প্রথম দিন থেকেই CI-তে Windows, macOS আর Linux-এ automated test, একটা shared reference workspace দিয়ে। |
 | Platform-এর পার্থক্য (path, line ending, বড়-ছোট হাতের অক্ষর, Linux-এ credential helper) থেকে শুধু একটা system-এ bug | এগুলো core-এর এক জায়গায় সামলানো, আর সেই অংশ তিনটা system-এই test করা। |
-| Unsigned installer ভয় পাওয়ানো সতর্কবার্তা দেখায়, ফলে প্রথম অভিজ্ঞতা খারাপ হয় | Signing আগে থেকে পরিকল্পনা করা (v0.2)। ততদিন download page-এ সতর্কবার্তাটা ব্যাখ্যা করা। |
+| Unsigned installer ভয় পাওয়ানো সতর্কবার্তা দেখায়, ফলে প্রথম অভিজ্ঞতা খারাপ হয় | v0.2-এ Windows signing। Apple Developer account না হওয়া পর্যন্ত macOS ad-hoc signed থাকবে (PLAT-11)। ততদিন download page থেকে link দেওয়া install guide প্রতিটা সতর্কবার্তা আর তা কীভাবে পার হতে হয় সেটা ব্যাখ্যা করবে (PLAT-12)। |
 | Desktop app বড় কাজ: Changes screen, diff view আর তিন pane-ওয়ালা merge editor — সবই বানাতে হবে | আগে একটা shared diff engine বানানো, আর তিনটাতেই সেটা ব্যবহার করা। বিকল্প হিসেবে বাইরের merge tool খোলার ব্যবস্থা থাকবে। |
 | Feature বাড়ার সাথে সাথে "খুব fast" ধীরে ধীরে হারিয়ে যায় | §৭ K-এর performance লক্ষ্যগুলো প্রতিটা change-এ CI-তে নিজে থেকে check হবে। |
 | কোনো bulk action বা pipeline অর্ধেক সফল হয়ে repo-গুলোকে ভিন্ন ভিন্ন অবস্থায় রেখে দেয় | আগে preview, প্রতিটা repo-র ফলাফলের grid, Resume আর Retry, undo (v0.2)। এমন মিশ্র অবস্থা dashboard-এ চোখে পড়ে। |
@@ -590,8 +586,8 @@ Sync task TK-2636 with dev — finished in 4.2 s
 | ৬ | App কোথায় publish হবে (GitHub Releases, website, নাকি শুধু ভেতরে), আর এটা কি open source হবে? | GitHub Releases। GPL-3.0 license-এ open source, github.com/dev-taosif-net/GitHeddle-এ। প্রথমে ব্যক্তিগত ব্যবহার, তবে এমনভাবে বানানো যাতে team ব্যবহার করতে পারে। |
 | ৭ | UI-এর ভাষা: শুধু ইংরেজি, নাকি বাংলাও? | v0.1-এ শুধু ইংরেজি। |
 | ৮ | কোন repo-গুলো মিলে স্বাভাবিক group হয়? | `backend` = `app-api`, `app-report-api`, `app-scheduler-api`, `app-signalr-api`; `frontend` = `app-front`; `docs` = `knowledge-hub`, `architecture-handbook`। |
-| ৯ | কোন technology: Tauri 2 নাকি Avalonia (C#)? | Tauri 2, কারণ গতি আর আকারের লক্ষ্যের সাথে এটাই সবচেয়ে ভালো মেলে। |
-| ১০ | Signing-এর জন্য কি Windows code-signing certificate আর Apple Developer account নেওয়া হবে? | v0.1-এ unsigned, v0.2 থেকে signed। |
+| ৯ | কোন technology? | **সিদ্ধান্ত হয়েছে:** Tauri 2 (Rust core + React/TypeScript UI)। লেখক কোন ভাষায় কাজ করেন সেটা দেখে নয়, প্রোডাক্টের যা দরকার আর Claude Code দিয়ে তৈরির সুবিধা দেখে এটা বেছে নেওয়া হয়েছে। দেখুন [ADR 0001](../decisions/0001-tech-stack.bn.md)। |
+| ১০ | Signing-এর জন্য কি Windows code-signing certificate আর Apple Developer account নেওয়া হবে? | **আপাতত ঠিক হয়েছে:** Windows v0.1-এ unsigned, v0.2 থেকে SignPath Foundation দিয়ে signed (PLAT-08)। আপাতত কোনো Apple Developer account নেই, তাই macOS ad-hoc signed থাকবে (PLAT-11), আর install guide বলে দেবে কীভাবে খুলতে হয় (PLAT-12)। |
 | ১১ | Pipeline-এ "`dev`-এ rebase" বলতে কী বোঝাবে? | Current branch-কে `dev`-এর ওপর rebase করা, তারপর `dev`-কে fast-forward করে সেখানে আনা (সোজা এক লাইনের history), PIPE-03-এর মতো। |
 | ১২ | Pipeline কি নির্দিষ্ট সময়ে নিজে থেকে চলবে (যেমন প্রতিদিন সকালে), নাকি শুধু হাতে চালালে? | v0.1-এ শুধু হাতে চালালে। |
 
@@ -622,3 +618,4 @@ Sync task TK-2636 with dev — finished in 4.2 s
 | 0.2 | ২ নভেম্বর ২০২৬ | আলাদা desktop app-এ বদলানো হয়েছে, Windows, macOS আর Linux-এর জন্য। Platform আর installation (§৭ J), গতি (§৭ K), সহজে ব্যবহার (§৭ L), আর change ও commit (§৭ D)-এর চাহিদা যোগ হয়েছে। Technology option (§১০) যোগ হয়েছে। |
 | 0.3 | ২ নভেম্বর ২০২৬ | "Merge request"-এর বদলে সব জায়গায় "pull request" ব্যবহার করা হয়েছে (requirement ID `MR-xx` এখন `PR-xx`)। Pipeline যোগ হয়েছে (§৭ M, Flow ৮)। Changes screen এখন VS Code-এর Source Control-এর মতো কাজ করে (§৭ D)। Conflict resolve হয় Visual Studio-র মতো তিন pane-ওয়ালা built-in merge editor-এ, যেটা এখন v0.1-এই থাকবে (§৭ F)। |
 | 0.4 | ২ নভেম্বর ২০২৬ | Project-টা GPL-3.0 license-এ open source (§১৪, প্রশ্ন ৬)। উদাহরণগুলোতে অফিসের repository-র নাম আর ticket key-র বদলে সাধারণ নাম দেওয়া হয়েছে। |
+| 0.5 | ৩ নভেম্বর ২০২৬ | Technology ঠিক হয়েছে: Tauri 2 (§১০, প্রশ্ন ৯), ADR 0001-এ লেখা আছে। Technology option-এর table-এর বদলে ADR-এর link দেওয়া হয়েছে। Planning review-এর পরে: macOS-এর সর্বনিম্ন version 13.3 (PLAT-01), team file-এর সীমা (CFG-03), আর §১০-এর diff ও merge, storage আর update-এর row-গুলো architecture আর build ডকুমেন্টের সাথে মেলানো হয়েছে। আপাতত কোনো Apple Developer account নেই: PLAT-08 এখন শুধু Windows-এর, নতুন PLAT-11 (notarised macOS app, P2) আর PLAT-12 (install guide, P0), প্রশ্ন ১০-এর উত্তর দেওয়া হয়েছে। |

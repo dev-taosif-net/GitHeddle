@@ -20,7 +20,7 @@ This applies to every human-readable document in the repository: everything unde
 - `<name>.en.md`: English
 - `<name>.bn.md`: Bangla
 - Both files sit in the same folder, and the top of each file links to the other version.
-- Exception: the root README is `README.md` (English) and `README.bn.md` (Bangla), so GitHub shows the English one on the repository page.
+- Exception: GitHub community files in the repository root (`README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY`) use `<NAME>.md` for English and `<NAME>.bn.md` for Bangla, so GitHub finds the English one.
 
 ### Bangla style
 

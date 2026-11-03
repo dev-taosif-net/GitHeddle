@@ -6,8 +6,8 @@
 |---|---|
 | **Product** | GitHeddle — a desktop app for Git and pull request work across many repositories, for Windows, macOS and Linux |
 | **Document** | Product Requirements Document (PRD) |
-| **Version** | 0.4 — Draft (changes in §16) |
-| **Date** | 2 November 2026 |
+| **Version** | 0.5 — Draft (changes in §16) |
+| **Date** | 3 November 2026 |
 | **Owner** | Taosif |
 | **Status** | Draft. Assumptions that still need confirming are listed in §14 |
 
@@ -282,22 +282,24 @@ Priority: **P0** = first release (MVP), **P1** = next release, **P2** = later.
 |---|---|---|
 | CFG-01 | Settings: branch name pattern, the user's short name (`taosif`), default base branch, protected branches, parallel limit, sync method (merge or rebase), pull request title and body templates, default reviewers per group, background fetch interval, the editor, terminal and merge tool to open (default: VS Code and the system terminal), theme. | P0 |
 | CFG-02 | Per-repo overrides, for example a repo whose base branch is `main` instead of `dev`. | P0 |
-| CFG-03 | An optional team config file in the workspace (`.githeddle.json`) for shared groups, patterns, templates and pipelines. | P1 |
+| CFG-03 | An optional team config file in the workspace (`.githeddle.json`) for shared groups, patterns, templates and pipelines. Because it comes from the repository, it can't name programs to run (editor, terminal, merge tool) or contain Run Git command steps, and any change to it takes effect only after the user approves it. | P1 |
 
 ### J. Platforms and installation
 
 | ID | Requirement | Priority |
 |---|---|---|
-| PLAT-01 | Runs on Windows 10 and 11 (x64 and ARM64), macOS 13 or newer (Apple Silicon and Intel), and Linux x64 (Ubuntu 22.04 or newer, Fedora 39 or newer, and similar distributions). | P0 |
+| PLAT-01 | Runs on Windows 10 and 11 (x64 and ARM64), macOS 13.3 or newer (Apple Silicon and Intel; 13.3 brings the Safari 16.4 webview the UI needs, see ADR 0001), and Linux x64 (Ubuntu 22.04 or newer, Fedora 39 or newer, and similar distributions). | P0 |
 | PLAT-02 | Installers: a Windows `.exe` installer that installs per user without admin rights, a macOS `.dmg`, and a Linux AppImage and `.deb`. | P0 |
 | PLAT-03 | Every feature works the same on all three systems. The app, not the user, handles platform differences: paths, line endings, case-sensitive file names, shells and credential helpers. | P0 |
 | PLAT-04 | Every release is tested on all three systems before it ships. | P0 |
 | PLAT-05 | Keyboard shortcuts follow each system's convention: Ctrl on Windows and Linux, ⌘ on macOS. | P0 |
 | PLAT-06 | Light and dark themes, following the system setting by default. | P0 |
 | PLAT-07 | Automatic updates: the app checks for a new version, shows what changed, and installs it on restart, never in the middle of an operation. | P1 |
-| PLAT-08 | Signed installers on Windows and a notarised app on macOS, so the systems don't show "unknown developer" warnings. | P1 |
+| PLAT-08 | A signed installer on Windows, so SmartScreen doesn't show an "unknown publisher" warning. | P1 |
 | PLAT-09 | A Linux `.rpm` package. | P1 |
 | PLAT-10 | A Linux ARM64 build. | P2 |
+| PLAT-11 | A notarised macOS app (Developer ID), so Gatekeeper shows no warning. This needs a paid Apple Developer account, which the project doesn't have yet. Until then, macOS builds are ad-hoc signed. | P2 |
+| PLAT-12 | As long as an installer is unsigned or not notarised, an install guide, linked from the download page and every release, explains step by step how to open the app past each system's warning: SmartScreen's "Run anyway" on Windows, "Open Anyway" in Privacy & Security on macOS, and how to check the download against `SHA256SUMS`. | P0 |
 
 ### K. Speed
 
@@ -508,30 +510,24 @@ Sync task TK-2636 with dev — finished in 4.2 s
 | **Transparency** | Every Git command that runs is visible in the activity log. GitHeddle never does anything the user couldn't repeat in a terminal. |
 | **Language** | The UI is in English in the first release (open question 7). |
 
-## 10. Technical approach (proposed)
+## 10. Technical approach
 
 | Part | Proposal |
 |---|---|
-| App | One codebase that builds a native desktop app for Windows, macOS and Linux. The technology is still open (question 9); the options are compared below. |
+| App | One codebase that builds a native desktop app for Windows, macOS and Linux. The technology is Tauri 2 (question 9, [ADR 0001](../decisions/0001-tech-stack.en.md)). |
 | Git operations | Run the user's `git` CLI in each repo, so behaviour, credentials and hooks match the terminal. A job runner outside the UI thread handles the parallel limit, cancellation and per-repo results. |
 | Repo state | Read directly from Git (for example `git status --porcelain=v2 --branch`), watch the file system for changes, and cache the last known state on disk so the dashboard appears instantly on start. |
-| Diff and merge | One shared diff engine for the Changes screen, the diff view and the merge editor. The merge editor takes the three versions of a conflicted file from Git itself (index stages 1, 2 and 3: base, current and incoming), so its result always matches what Git would do. |
+| Diff and merge | One shared diff engine for the Changes screen, the diff view and the merge editor. The merge editor takes the three versions of a conflicted file from Git itself (index stages 1, 2 and 3), and the conflict regions from the markers Git wrote into the file, so its result always matches what Git did. Which stage is shown as Current and which as Incoming depends on whether it is a merge, rebase or cherry-pick (see the architecture document). |
 | Pipelines | Stored as data: an ordered list of steps with their settings. They run on the same job runner as bulk actions. Each repo's run is a small state machine that can pause and resume, and its state is saved to disk so a paused run survives an app restart. |
 | GitHub | OAuth device flow for sign-in, and the GitHub REST and GraphQL APIs. GraphQL fetches the status of many pull requests in one request. |
-| Storage | Settings, workspaces, groups, tasks and pipelines in the app's data folder, in each system's usual place (`%APPDATA%` on Windows, `~/Library/Application Support` on macOS, `~/.config` on Linux). The optional team file `.githeddle.json` lives in the workspace. Tokens live in the system keychain. |
+| Storage | Settings, workspaces, groups, tasks and pipelines in the app's config folder, in each system's usual place (`%APPDATA%` on Windows, `~/Library/Application Support` on macOS, `~/.config` on Linux). The state cache, pipeline journal and logs go in the local data folder (`%LOCALAPPDATA%` on Windows, `$XDG_DATA_HOME` on Linux); the architecture document has the details. The optional team file `.githeddle.json` lives in the workspace. Tokens live in the system keychain. |
 | Editor and tools | Open repos and files in VS Code with the `code` command by default. The editor, terminal and external merge tool are configurable. |
 | Hosting providers | One provider interface (create, list, update and merge pull requests; read checks and reviews), so that GitLab or Azure DevOps can be added later without changing the rest. |
-| Updates (v0.2) | Signed update packages. Where they are published is still open (question 6). |
+| Updates (v0.2) | Signed update packages published on GitHub Releases (question 6). The [build and release](../engineering/build-and-release.en.md) document describes the updater. |
 
-### Technology options
+### Technology decision
 
-| Option | Strengths | Weaknesses |
-|---|---|---|
-| **Tauri 2** (Rust core + web UI) | Very small installer (a few MB), fast start and low memory. The web UI is quick to build and style. | Rust is a new language if the author doesn't already use it. Each system's built-in webview behaves slightly differently, so the UI needs testing on all three. |
-| **Avalonia** (C# / .NET) | The author already works in C# / .NET (`app-api`). Native rendering looks the same on all three systems, and performance is good. | Fewer ready-made UI components. A self-contained .NET app makes a larger installer (tens of MB). |
-| **Electron** (Node.js + web UI) | The largest ecosystem, with the same Chromium on every system. | A large installer (around 100 MB or more) and high memory use, which works against "very fast". |
-
-**Recommendation:** Tauri 2 fits "very fast" and "small" best. Avalonia is the better choice if staying in C# matters more. Decide before development starts (question 9).
+[ADR 0001](../decisions/0001-tech-stack.en.md) records the decision, made by a unanimous vote of a five-agent review panel: **Tauri 2, with a Rust core and a React + TypeScript UI**. Electron is the fallback. The decision becomes final when the M1 go/no-go gate in the [roadmap](../plan/roadmap.en.md) passes on all three systems. The [architecture](../architecture/architecture.en.md) document describes how each part in the table above is built.
 
 ## 11. Success metrics
 
@@ -555,8 +551,8 @@ Before building, time the manual flows once to get a baseline.
 | Release | Scope |
 |---|---|
 | **v0.1 — MVP** | All P0 requirements: dashboard, groups, the VS Code-style Changes screen with diffs and commits, bulk operations, Start and Switch Task, Sync with Base, Merge Task Into…, the Conflicts screen with the three-pane merge editor, pipelines with the ready-made ones, creating pull requests with related links, task pull request status, safety rules, settings, installers for all three systems, and the speed and ease-of-use requirements. |
-| **v0.2** | All P1 requirements: Base view in the merge editor, pipeline step options, shortcuts, sharing and run history, automatic updates, signed installers, `.rpm` package, Pull Requests screen, bulk pull request update and merge, Finish Task, undo, commit history, more operations, Run Git command, team config file, repo pull request templates, several workspaces, built-in help. |
-| **v0.3 and later** | P2 requirements and new hosts: line-level staging, more pipeline step types, review flow, notifications, Conventional Commits, Linux ARM64, GitLab and Azure DevOps, fetching ticket titles from an issue tracker, AI-written pull request descriptions. |
+| **v0.2** | All P1 requirements: Base view in the merge editor, pipeline step options, shortcuts, sharing and run history, automatic updates, a signed Windows installer, `.rpm` package, Pull Requests screen, bulk pull request update and merge, Finish Task, undo, commit history, more operations, Run Git command, team config file, repo pull request templates, several workspaces, built-in help. |
+| **v0.3 and later** | P2 requirements and new hosts: line-level staging, more pipeline step types, review flow, notifications, Conventional Commits, Linux ARM64, a notarised macOS app once there is an Apple Developer account, GitLab and Azure DevOps, fetching ticket titles from an issue tracker, AI-written pull request descriptions. |
 
 **v0.1 is done when** the author takes one real ticket that spans 2 repos from Start Task to created pull requests using only GitHeddle plus an editor, including at least one conflict resolved in the merge editor and one run of a saved pipeline; the same flows pass on macOS and Linux test machines; and the start-up and dashboard targets (PERF-01, PERF-02) are met on all three systems.
 
@@ -566,7 +562,7 @@ Before building, time the manual flows once to get a baseline.
 |---|---|
 | Three systems triple the testing | Automated tests on Windows, macOS and Linux in CI from day one, using one shared reference workspace. |
 | Platform differences (paths, line endings, case sensitivity, credential helpers on Linux) cause bugs on one system only | Handle them in one place in the core and test that layer on all three systems. |
-| Unsigned installers show frightening warnings and give a bad first impression | Plan signing early (v0.2). Until then, the download page explains the warning. |
+| Unsigned installers show frightening warnings and give a bad first impression | Windows signing in v0.2. macOS stays ad-hoc signed until there is an Apple Developer account (PLAT-11). Until then, the install guide linked from the download page explains each warning and how to get past it (PLAT-12). |
 | A desktop app is a bigger job: the Changes screen, the diff view and the three-pane merge editor all have to be built | Build one shared diff engine first and use it for all three. Opening an external merge tool stays available as a fallback. |
 | "Very fast" erodes slowly as features are added | The performance targets in §7 K are checked automatically in CI on every change. |
 | A bulk action or pipeline half-succeeds and leaves repos in different states | Preview first, a per-repo result grid, Resume and Retry, undo (v0.2). The dashboard makes a mixed state visible. |
@@ -590,8 +586,8 @@ Before building, time the manual flows once to get a baseline.
 | 6 | Where is the app published (GitHub Releases, a website, internal only), and is it open source? | GitHub Releases. Open source under GPL-3.0, at github.com/dev-taosif-net/GitHeddle. Personal use first, built so the team can use it. |
 | 7 | UI language: English only, or Bangla as well? | English only in v0.1. |
 | 8 | Which repos form the natural groups? | `backend` = `app-api`, `app-report-api`, `app-scheduler-api`, `app-signalr-api`; `frontend` = `app-front`; `docs` = `knowledge-hub`, `architecture-handbook`. |
-| 9 | Which technology: Tauri 2 or Avalonia (C#)? | Tauri 2, because it fits the speed and size targets best. |
-| 10 | Will there be a Windows code-signing certificate and an Apple Developer account for signing? | Unsigned in v0.1, signed from v0.2. |
+| 9 | Which technology? | **Decided:** Tauri 2 (Rust core + React/TypeScript UI). It was chosen for what the product needs and for building it with Claude Code, not for the languages the author already uses. See [ADR 0001](../decisions/0001-tech-stack.en.md). |
+| 10 | Will there be a Windows code-signing certificate and an Apple Developer account for signing? | **Decided for now:** Windows is unsigned in v0.1 and signed through SignPath Foundation from v0.2 (PLAT-08). There is no Apple Developer account for now, so macOS stays ad-hoc signed (PLAT-11), and the install guide explains how to open it (PLAT-12). |
 | 11 | In a pipeline, what should "rebase into `dev`" mean? | Rebase the current branch onto `dev`, then fast-forward `dev` to it (a straight-line history), as in PIPE-03. |
 | 12 | Should pipelines be able to run on a schedule (for example every morning), or only when started by hand? | Only by hand in v0.1. |
 
@@ -622,3 +618,4 @@ Before building, time the manual flows once to get a baseline.
 | 0.2 | 2 November 2026 | Changed to a standalone desktop app for Windows, macOS and Linux. Added requirements for platforms and installation (§7 J), speed (§7 K), ease of use (§7 L), and changes and commits (§7 D). Added the technology options (§10). |
 | 0.3 | 2 November 2026 | "Pull request" is used everywhere instead of "merge request" (requirement IDs `MR-xx` became `PR-xx`). Added pipelines (§7 M, Flow 8). The Changes screen now works like VS Code's Source Control (§7 D). Conflicts are resolved in a built-in three-pane merge editor like Visual Studio's, now in v0.1 (§7 F). |
 | 0.4 | 2 November 2026 | The project is open source under GPL-3.0 (§14, question 6). Work-specific repository names and ticket keys in the examples were replaced with generic ones. |
+| 0.5 | 3 November 2026 | Technology decided: Tauri 2 (§10, question 9), recorded in ADR 0001. The technology options table was replaced by a link to the ADR. After the planning review: macOS floor 13.3 (PLAT-01), limits on the team file (CFG-03), and §10 rows for diff and merge, storage and updates aligned with the architecture and build documents. No Apple Developer account for now: PLAT-08 covers Windows only, new PLAT-11 (notarised macOS app, P2) and PLAT-12 (install guide, P0), question 10 answered. |
