@@ -415,7 +415,7 @@ Rules:
 
 The owner sets these once in the repository settings during M0:
 
-1. **Branch protection on `main`:** changes only through pull requests; the required checks of §4.1 must be green; no required approvals, because GitHub doesn't count a solo maintainer's own approval. The owner's review is the ticked acceptance checklist in the pull request, and the owner merges personally. Squash merge only.
+1. **Branch protection on `main`:** changes only through pull requests, except that the owner (repository admin) may bypass the rules and push directly, for example for small document fixes. Claude Code sessions still always work on a branch and open a pull request; the required checks of §4.1 must be green; no required approvals, because GitHub doesn't count a solo maintainer's own approval. The owner's review is the ticked acceptance checklist in the pull request, and the owner merges personally. Squash merge only.
 2. **Tag ruleset:** only the owner can create, move or delete tags matching `v*`.
 3. **Environments:** `release` (tags `v*` only, owner as required reviewer) and `github-live` (scheduled runs on `main` only).
 4. **Private vulnerability reporting** turned on (see [SECURITY.md](../../SECURITY.md)).

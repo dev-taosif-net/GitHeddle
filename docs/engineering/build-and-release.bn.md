@@ -415,7 +415,7 @@ Release-এর `verify` job একটা template থেকে "Release vX.Y.Z" 
 
 M0-এর সময় owner repository-র setting-এ একবার এগুলো ঠিক করেন:
 
-1. **`main`-এ branch protection:** পরিবর্তন শুধু pull request দিয়ে; §৪.১-এর required check সবুজ হতে হবে; কোনো approval বাধ্যতামূলক না, কারণ GitHub একা maintainer-এর নিজের approval গোনে না। Owner-এর review হলো pull request-এ tick করা acceptance checklist, আর owner নিজে merge করেন। শুধু squash merge।
+1. **`main`-এ branch protection:** পরিবর্তন শুধু pull request দিয়ে, তবে owner (repository admin) নিয়ম এড়িয়ে সরাসরি push করতে পারেন, যেমন ডকুমেন্টের ছোট সংশোধনের জন্য। Claude Code-এর session তবুও সবসময় একটা branch-এ কাজ করে pull request খোলে; §৪.১-এর required check সবুজ হতে হবে; কোনো approval বাধ্যতামূলক না, কারণ GitHub একা maintainer-এর নিজের approval গোনে না। Owner-এর review হলো pull request-এ tick করা acceptance checklist, আর owner নিজে merge করেন। শুধু squash merge।
 2. **Tag ruleset:** `v*`-এর সাথে মেলে এমন tag শুধু owner তৈরি, সরানো বা মুছতে পারেন।
 3. **Environment:** `release` (শুধু `v*` tag, owner required reviewer) আর `github-live` (শুধু `main`-এর schedule করা run)।
 4. **Private vulnerability reporting** চালু ([SECURITY.bn.md](../../SECURITY.bn.md) দেখুন)।
