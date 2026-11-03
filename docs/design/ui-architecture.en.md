@@ -10,7 +10,7 @@
 | **Owner** | Taosif |
 | **Status** | Draft. Follows ADR 0001. The parts marked "check at M1" depend on the M1 spike results |
 
-**Related documents:** [PRD](../product/PRD.en.md) · [ADR 0001 — Technology stack](../decisions/0001-tech-stack.en.md) · [Architecture](../architecture/architecture.en.md) · [Build and release](../engineering/build-and-release.en.md) · [Test strategy](../engineering/test-strategy.en.md) · [Security](../engineering/security.en.md) · [AI development workflow](../process/ai-development-workflow.en.md) · [Roadmap](../plan/roadmap.en.md)
+**Related documents:** [PRD](../product/PRD.en.md) · [ADR 0001 — Technology stack](../decisions/0001-tech-stack.en.md) · [Architecture](../architecture/architecture.en.md) · [Build and release](../engineering/build-and-release.en.md) · [Test strategy](../engineering/test-strategy.en.md) · [Security](../engineering/security.en.md) · [AI development workflow](../process/ai-development-workflow.en.md) · [Roadmap](../plan/roadmap.en.md) · [UI/UX design](ux-design.en.md)
 
 > This file and its Bangla version carry the same content. When one changes, update the other in the same commit.
 

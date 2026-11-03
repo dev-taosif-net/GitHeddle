@@ -10,7 +10,7 @@
 | **দায়িত্বে** | Taosif |
 | **অবস্থা** | খসড়া। ADR 0001 মেনে লেখা। যেসব জায়গায় "M1-এ যাচাই" লেখা আছে, সেগুলো M1 spike-এর ফলাফলের উপর নির্ভর করে |
 
-**সম্পর্কিত ডকুমেন্ট:** [PRD](../product/PRD.bn.md) · [ADR 0001 — Technology stack](../decisions/0001-tech-stack.bn.md) · [Architecture](../architecture/architecture.bn.md) · [Build ও release](../engineering/build-and-release.bn.md) · [Test strategy](../engineering/test-strategy.bn.md) · [Security](../engineering/security.bn.md) · [AI development workflow](../process/ai-development-workflow.bn.md) · [Roadmap](../plan/roadmap.bn.md)
+**সম্পর্কিত ডকুমেন্ট:** [PRD](../product/PRD.bn.md) · [ADR 0001 — Technology stack](../decisions/0001-tech-stack.bn.md) · [Architecture](../architecture/architecture.bn.md) · [Build ও release](../engineering/build-and-release.bn.md) · [Test strategy](../engineering/test-strategy.bn.md) · [Security](../engineering/security.bn.md) · [AI development workflow](../process/ai-development-workflow.bn.md) · [Roadmap](../plan/roadmap.bn.md) · [UI/UX ডিজাইন](ux-design.bn.md)
 
 > এই file আর এর ইংরেজি সংস্করণে একই content আছে। একটা বদলালে অন্যটাও একই commit-এ update করতে হবে।
 

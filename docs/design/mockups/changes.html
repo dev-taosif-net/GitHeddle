@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changes screen, diff view and commit box · GitHeddle mockup</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Mockup page chrome (outside the app window). Only token variables. */
+body { background: var(--gh-surface-base); }
+.mock-bar__title { font-weight: 600; }
+.mock-page { display: flex; flex-direction: column; align-items: center; gap: var(--gh-space-8); padding: var(--gh-space-8) var(--gh-space-6) 6rem; }
+.mock-section { width: 1280px; display: flex; flex-direction: column; gap: var(--gh-space-5); }
+.mock-heading { font-size: var(--gh-text-screen-title-size); line-height: var(--gh-text-screen-title-lh); font-weight: 600; color: var(--gh-text-primary); }
+.mock-desc { color: var(--gh-text-secondary); max-width: 60rem; }
+.mock-window .gh-scrim { z-index: 20; }
+.mock-window .gh-toast-region { position: absolute; z-index: 30; }
+.mock-specimens { display: flex; flex-wrap: wrap; gap: var(--gh-space-7); align-items: flex-start; }
+.mock-specimen { display: flex; flex-direction: column; gap: var(--gh-space-3); }
+.mock-specimen--full { width: 100%; }
+.mock-stage { background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); padding: var(--gh-space-6); }
+.mock-stage--base { background: var(--gh-surface-base); }
+.mock-window .gh-scrim--static, .mock-specimen .gh-scrim--static { border-radius: var(--gh-radius-lg); }
+.mock-page .gh-scrim--static { min-height: 0; }
+
+.mock-filter { width: 15rem; }
+.gh-diff-collapsed { white-space: nowrap; overflow: hidden; }
+.gh-toast__text .gh-btn-group { display: flex; flex-wrap: wrap; gap: var(--gh-space-3); margin-top: var(--gh-space-3); }
+
+/* Small shell additions used only by these mockups */
+.mock-body--rail { grid-template-columns: var(--gh-sidebar-rail) 1fr auto; }
+.mock-rail { align-items: center; gap: var(--gh-space-1); padding: var(--gh-space-3) 0; overflow: visible; }
+.mock-rail-item { position: relative; display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--gh-radius-md); color: var(--gh-text-secondary); }
+.mock-rail-item:hover { background: var(--gh-surface-hover); text-decoration: none; }
+.mock-rail-item.is-selected { background: var(--gh-surface-selected); box-shadow: inset var(--gh-bar-width) 0 0 var(--gh-accent-indicator); }
+.mock-rail-item.is-selected .gh-icon { color: var(--gh-text-primary); }
+.mock-rail-count { position: absolute; top: -2px; right: -2px; height: 1rem; min-width: 1rem; font-size: var(--gh-text-caption-size); }
+.mock-rail-bottom { width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--gh-space-1); }
+.mock-topbar-tools { flex: 1; gap: var(--gh-space-3); }
+.mock-picker { min-width: 0; padding: 0 var(--gh-space-4); gap: var(--gh-space-3); }
+.mock-chip-title { max-width: 160px; }
+.mock-flash { background: var(--gh-info-soft); }
+.mock-search { display: inline-flex; align-items: center; gap: var(--gh-space-4); width: 13rem; height: var(--gh-control-md); padding: 0 var(--gh-space-4); font: inherit; background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-md); color: var(--gh-text-primary); text-align: left; }
+.mock-search > .gh-truncate { flex: 1; }
+.mock-disclosure { display: inline-flex; align-items: center; gap: var(--gh-space-2); padding: 0; border: 0; background: transparent; font: inherit; color: inherit; }
+.mock-dot-space { width: 6px; flex: none; }
+button.gh-jobchip { border: 0; background: transparent; font: inherit; font-size: inherit; }
+button.gh-nav-item, button.gh-menu__item { border: 0; background: transparent; font: inherit; width: 100%; text-align: left; color: inherit; }
+.gh-menu__item--danger { color: var(--gh-danger); }
+.gh-nav-item .gh-count + .gh-icon, .gh-nav-item .gh-count + .gh-dot { margin-left: calc(-1 * var(--gh-space-2)); }
+.mock-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 1.125rem; height: 1.125rem; border-radius: var(--gh-radius-full); background: var(--gh-info-soft); color: var(--gh-info); box-shadow: inset 0 0 0 1px var(--gh-info); font-size: var(--gh-text-caption-size); line-height: 1; font-weight: 600; flex: none; }
+
+/* Page-specific styles (token variables only) */
+
+.mock-split { display: flex; flex: 1; min-height: 0; }
+.mock-list { width: 380px; flex: none; }
+.mock-list-header { gap: var(--gh-space-3); padding: 0 var(--gh-space-4) 0 var(--gh-space-5); border-bottom: 1px solid var(--gh-border-subtle); }
+.mock-list-toolbar { padding: 0 var(--gh-space-5); }
+.mock-grow { flex: 1; width: 100%; }
+.mock-commit { display: flex; flex-direction: column; gap: var(--gh-space-3); padding: var(--gh-space-4) var(--gh-space-5); border-bottom: 1px solid var(--gh-border-subtle); background: var(--gh-surface-raised); flex: none; }
+.mock-scope { height: var(--gh-control-sm); font-size: var(--gh-text-body-size); }
+.mock-msg { min-height: 3.75rem; }
+.mock-warning-text { color: var(--gh-warning); }
+.mock-tree { padding-bottom: var(--gh-space-6); }
+.mock-branch { max-width: 11rem; font-size: var(--gh-text-caption-size); font-weight: 400; }
+.mock-finish { white-space: nowrap; font-weight: 400; }
+.mock-file__name { flex: none; max-width: 13rem; overflow: hidden; text-overflow: ellipsis; }
+.mock-file__folder { flex: 1; min-width: 0; padding-left: var(--gh-space-3); }
+.mock-file.is-hover { background: var(--gh-surface-hover); }
+.mock-file .gh-row__slot .gh-btn--icon { width: 1.5rem; }
+.mock-diff { flex: 1; min-width: 0; }
+.mock-diff-header { height: 4rem; display: flex; flex-direction: column; justify-content: center; gap: var(--gh-space-2); padding: 0 var(--gh-space-5); background: var(--gh-surface-raised); border-bottom: 1px solid var(--gh-border-subtle); flex: none; }
+.mock-diff-row { gap: var(--gh-space-3); min-width: 0; }
+.mock-compare { flex: 0 1 auto; gap: var(--gh-space-2); }
+.mock-compare > span { white-space: nowrap; }
+.mock-diff-row > .gh-segmented, .mock-diff-row > .gh-btn, .mock-diff-row > .gh-caption { flex: none; white-space: nowrap; }
+.mock-diff-body { flex: 1; display: flex; min-height: 0; position: relative; }
+.mock-editor { flex: 1; min-width: 0; }
+.mock-inline .gh-line__num { width: 2.5rem; }
+.mock-side .gh-line__num { width: 2.5rem; }
+.mock-spacer-num { background: transparent; }
+.gh-diff-spacer .gh-line__num { background: transparent; }
+.gh-ruler { position: relative; }
+.mock-ruler-mark { position: absolute; left: 2px; right: 2px; height: 4px; border-radius: 1px; }
+.mock-ruler-mark--ins { background: var(--gh-success); }
+.mock-ruler-mark--del { background: var(--gh-danger); }
+.mock-collapsed-overlay { display: none; }
+.mock-ctx { position: absolute; z-index: 20; left: 260px; top: 498px; min-width: 15rem; }
+.mock-w380 { width: 380px; }
+.mock-nopad { padding: 0; overflow: hidden; }
+.mock-pad { padding: var(--gh-space-3) var(--gh-space-5); }
+.mock-center { text-align: center; padding: var(--gh-space-8) var(--gh-space-6); }
+.mock-multibar { background: var(--gh-surface-raised); border-bottom: 1px solid var(--gh-border-subtle); }
+.mock-noactions .gh-row__slot { visibility: visible; }
+.mock-tooltip-anchor { display: flex; justify-content: flex-end; padding: var(--gh-space-2) var(--gh-space-5); }
+.mock-loss { margin: var(--gh-space-4) 0 0; padding-left: var(--gh-space-6); display: grid; gap: var(--gh-space-2); }
+.mock-special { width: 22rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--gh-space-3); }
+.mock-rename { display: flex; align-items: center; gap: var(--gh-space-3); height: 1.75rem; padding: 0 var(--gh-space-5); background: var(--gh-info-soft); font-size: var(--gh-text-caption-size); }
+.mock-sk-80 { width: 5rem; } .mock-sk-120 { width: 7.5rem; } .mock-sk-160 { width: 10rem; } .mock-sk-32 { width: 2rem; }
+.mock-mt { margin-top: var(--gh-space-3); }
+.mock-filter { width: 15rem; }
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol><symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol><symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol><symbol id="i-octagon-x" viewBox="0 0 24 24"><path d="m15 9-6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m9 9 6 6"/></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-shield-question" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol><symbol id="i-arrow-down-to-line" viewBox="0 0 24 24"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></symbol><symbol id="i-arrow-up-from-line" viewBox="0 0 24 24"><path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/></symbol><symbol id="i-cloud-download" viewBox="0 0 24 24"><path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></symbol><symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></symbol><symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol><symbol id="i-git-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol><symbol id="i-git-merge" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></symbol><symbol id="i-git-compare" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></symbol><symbol id="i-git-commit-horizontal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="3" x2="9" y1="12" y2="12"/><line x1="15" x2="21" y1="12" y2="12"/></symbol><symbol id="i-git-pull-request" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></symbol><symbol id="i-folder-git-2" viewBox="0 0 24 24"><path d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"/><circle cx="13" cy="12" r="2"/><path d="M18 19c-2.8 0-5-2.2-5-5v8"/><circle cx="20" cy="19" r="2"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol><symbol id="i-file-diff" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></symbol><symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol><symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol><symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol><symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol><symbol id="i-square-terminal" viewBox="0 0 24 24"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2"/></symbol><symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol><symbol id="i-list-collapse" viewBox="0 0 24 24"><path d="m3 10 2.5-2.5L3 5"/><path d="m3 19 2.5-2.5L3 14"/><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol><symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-grip-vertical" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol><symbol id="i-columns-2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol><symbol id="i-rows-2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 12h18"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c2 0 2 .9 2 2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol><symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></symbol><symbol id="i-unlink" viewBox="0 0 24 24"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol></svg>
+<div class="gh-mock-bar" role="region" aria-label="Mockup controls">
+  <a href="index.html" class="gh-link"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All mockups</a>
+  <span class="mock-bar__title">Changes screen, diff view and commit box</span>
+  <span class="gh-spacer"></span>
+  <span class="gh-caption gh-secondary" id="theme-label">Theme</span>
+  <div class="gh-segmented" role="group" aria-labelledby="theme-label">
+    <button type="button" class="is-selected" data-theme-choice="light" aria-pressed="true"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>Light</button>
+    <button type="button" data-theme-choice="dark" aria-pressed="false"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>Dark</button>
+  </div>
+</div>
+<div class="mock-page">
+<section class="mock-section" aria-labelledby="page-intro">
+  <h1 id="page-intro" class="mock-heading">Changes screen, diff view and commit box</h1>
+  <p class="mock-desc">Covers CHG-01..07 and BULK-06 (ux-design §8 and §9). The window is 1280 × 800. At this width the sidebar is docked (240 px), the list pane is 380 px, so the diff pane is 659 px: under the 720 px threshold, the diff switches to inline by itself (§9.2). The second window collapses the sidebar to the rail (Mod+B), which gives the diff 851 px and brings side by side back.</p>
+</section>
+<section class="mock-section" aria-labelledby="w1-h">
+  <h2 id="w1-h" class="mock-heading">1. Changes, list mode, inline diff, commit-all mode</h2>
+  <p class="mock-desc">app-api is mid-merge, so it is left out of the commit scope (SAFE-06) and its header links to Conflicts. Nothing is staged in app-front, so the commit box is in commit-all mode and the button names the file count (R14). The selected row shows its three row buttons in the 72 px slot, danger leftmost.</p>
+  <div class="gh-mock-window mock-window" role="region" aria-label="Changes screen, list mode, inline diff">
+<div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+<div class="gh-shell">
+<a class="gh-sr-only" href="#main-w1">Skip to main content</a>
+<header class="gh-topbar" role="banner">
+  <div class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></div>
+  <div class="gh-hstack mock-topbar-tools" role="toolbar" aria-label="App actions">
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" title="Workspace: acme-works. Open folder, import a VS Code workspace or rescan.">acme-works <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <button class="gh-btn mock-picker" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Target: Task TK-2636, 2 repos" title="Fetch, Pull, Push and pipelines act on these repos.">Target: Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate mock-chip-title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-topbar__spacer"></span>
+    <button class="gh-btn gh-btn--primary" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+    <button class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-vdivider" aria-hidden="true"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Push 2 repos" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+    <button class="mock-search" aria-label="Search or run a command (Ctrl+K)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span class="gh-truncate gh-secondary">Search or run a command…</span><kbd class="gh-kbd">Ctrl K</kbd></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net"><span class="gh-initials gh-initials--sm">TA</span></button>
+  </div>
+</header>
+<div class="gh-shell__body">
+<nav class="gh-sidebar" aria-label="Main">
+  <a href="#" class="gh-nav-item" aria-label="Repositories, 6 repos, 1 needs review"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="gh-count">6</span><svg class="gh-icon gh-icon--sm" style="color:var(--gh-warning)" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></a>
+  <a href="#" class="gh-nav-item is-selected" aria-label="Changes, 8 files" aria-current="page"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="gh-count">8</span></a>
+  <a href="#" class="gh-nav-item" aria-label="Pull requests, 1 open"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item" aria-label="Conflicts, 1 repo needs you" title="1 repo, 3 conflicted files"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item" aria-label="Pipelines"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span><span class="gh-spacer"></span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Tasks</h2></button><button class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub " aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate">Onboarding</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Active</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><span class="mock-dot-space" aria-hidden="true"></span><span class="gh-code">TK-2601</span><span class="gh-truncate">Cost centres</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><span class="mock-dot-space" aria-hidden="true"></span><span class="gh-secondary">Show all (6)</span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Pipelines</h2></button><button class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main → dev</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main</span><span class="gh-spacer"></span><span title="Ready-made. Duplicate it to change it"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main, merge into dev</span><span title="Ready-made. Duplicate it to change it"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Groups</h2></button><button class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>backend</span><span class="gh-count">4</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>frontend</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>docs</span><span class="gh-count">2</span></a>
+  <div class="gh-sidebar__bottom">
+    <a href="#" class="gh-nav-item"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a>
+    <a href="#" class="gh-nav-item"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a>
+  </div>
+</nav>
+<main class="gh-main" id="main-w1" aria-label="Changes">
+<div class="mock-split">
+  <section class="gh-pane mock-list" aria-label="Changes list">
+  <div class="gh-screen-header mock-list-header">
+    <h1 class="gh-screen-title">Changes</h1><span class="gh-secondary">8 files · 2 repos</span>
+    <span class="gh-spacer"></span>
+    <div class="gh-segmented" role="radiogroup" aria-label="View">
+      <button role="radio" aria-checked="true" class="is-selected" title="Shows files as a flat list with their folder.">List</button>
+      <button role="radio" aria-checked="false" title="Shows files grouped in folders.">Tree</button>
+    </div>
+    <button class="gh-btn gh-btn--icon" aria-label="Collapse all" title="Collapses every repo."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-list-collapse"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Refresh" title="Re-reads every repo’s changes from Git."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-refresh-cw"/></svg></button>
+  </div>
+  <div class="gh-toolbar mock-list-toolbar" role="toolbar" aria-label="Filter">
+    <label class="gh-search mock-grow"><span class="gh-sr-only">Filter files</span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input mock-grow" placeholder="Filter files…"></label>
+    <kbd class="gh-kbd">Ctrl F</kbd>
+  </div>
+  <section class="mock-commit" aria-label="Commit">
+  <div class="gh-hstack"><span id="cb1-scope-label">Commit in</span><button class="gh-select mock-scope" aria-labelledby="cb1-scope-label cb1-scope" id="cb1-scope" aria-haspopup="listbox">app-front · 2 changes <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+  <label class="gh-sr-only" for="cb1-msg">Commit message</label>
+  <textarea id="cb1-msg" class="gh-textarea gh-code mock-msg" rows="3" aria-describedby="cb1-desc">TK-2636: </textarea>
+  <span id="cb1-desc" class="gh-sr-only">Commits 2 files in app-front. Nothing staged, so all changes are committed.</span>
+  <p class="gh-caption">Nothing staged, so all 2 changed files will be committed. <button class="gh-btn gh-btn--link gh-caption">Choose files…</button></p>
+  
+  <p class="gh-caption gh-secondary">Will commit 2 files to <span class="gh-code">TK-2636-taosif-Onboarding</span> in app-front.</p>
+  <div class="gh-hstack">
+    <span class="gh-spacer"></span>
+    <button class="gh-btn" title="Commits, then pushes each repo that committed. Publishes the branch if it isn't on origin yet. Ctrl+Shift+Enter">Commit &amp; push</button>
+    <button class="gh-btn gh-btn--primary" title="Saves the staged files as a new commit on each repo's current branch. Nothing is pushed."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-commit-horizontal"/></svg>Commit 2 files<kbd class="gh-kbd">Ctrl Enter</kbd></button>
+  </div>
+</section>
+  
+  <div class="gh-pane__body"><div role="tree" aria-label="Changed files" aria-multiselectable="true" class="mock-tree">
+  <div role="treeitem" aria-level="1" aria-setsize="2" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--repo" aria-label="app-api, on dev, merging TK-2636-taosif-Onboarding, 6 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>app-api</span><span class="gh-code gh-secondary gh-truncate mock-branch">dev</span><span class="gh-pill gh-pill--conflict" title="Merging TK-2636-taosif-Onboarding into dev"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg>Merging</span><span class="gh-spacer"></span><a href="#" class="gh-link gh-caption mock-finish">Finish on Conflicts <svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Merge changes, 3 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Merge changes</span><span class="gh-count">3</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm" title="Opens the merge editor on the first unresolved file.">Resolve all…</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file " aria-label="Api.csproj, Api, conflicted, 6 conflicts" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Api.csproj</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="6 conflicts">6 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="DeleteOnboarding.cs, Services/HrmService/Features, conflicted, 2 conflicts" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">DeleteOnboarding.cs</span><span class="gh-folder mock-file__folder">Services/HrmService/Features</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="2 conflicts">2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file " aria-label="DeleteOnboardingTests.cs, Tests/HrmService.IntegrationTests, conflicted, 1 conflict" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">DeleteOnboardingTests.cs</span><span class="gh-folder mock-file__folder">Tests/HrmService.IntegrationTests</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="1 conflicts">1 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="2" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Staged changes, 3 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Staged changes</span><span class="gh-count">3</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm" aria-label="Unstage all 3 files in app-api" title="Unstages all 3 files in app-api. Your edits stay."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg> all</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file " aria-label="Program.cs, Api, modified, 8 added, 2 removed, staged" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Program.cs</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+8</span> <span class="gh-counts__del">−2</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="OnboardingController.cs, Api/Controllers, added, 41 added, 0 removed, staged" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">OnboardingController.cs</span><span class="gh-folder mock-file__folder">Api/Controllers</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+41</span> <span class="gh-counts__del">−0</span></span></span><span class="gh-status gh-status--A" title="Added" aria-hidden="true">A</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file " aria-label="appsettings.json, Api, modified, 3 added, 1 removed, staged" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">appsettings.json</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+3</span> <span class="gh-counts__del">−1</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="1" aria-setsize="2" aria-posinset="2" aria-expanded="true" class="gh-row gh-row--repo" aria-label="app-front, on TK-2636-taosif-Onboarding, 2 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>app-front</span><span class="gh-code gh-secondary gh-truncate mock-branch">TK-2636-taosif-Onboarding</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">2 changes</span>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="1" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Changes, 2 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Changes</span><span class="gh-count">2</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm gh-btn--danger-text" aria-label="Discard all changes in app-front" title="Discards all changes in app-front, after showing what will be lost."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg> all</button><button class="gh-btn gh-btn--sm" aria-label="Stage all 2 files in app-front" title="Stages all 2 files in app-front."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> all</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="1" class="gh-row gh-indent-2 mock-file is-selected" aria-label="cost-center.service.ts, src/app/hrm/cost-centers, modified, 22 added, 4 removed" aria-selected="true">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center.service.ts</span><span class="gh-folder mock-file__folder">src/app/hrm/cost-centers</span>
+    <span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-label="Discard changes to cost-center.service.ts" title="Throws away your changes to this file after showing exactly what will be lost."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Open cost-center.service.ts in editor" title="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Stage cost-center.service.ts" title="Adds this file to the next commit."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="cost-center-list.component.html, src/app/hrm/cost-centers/list, modified, 5 added, 1 removed" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center-list.component.html</span><span class="gh-folder mock-file__folder">src/app/hrm/cost-centers/list</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+5</span> <span class="gh-counts__del">−1</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+</div></div>
+</section>
+  <div class="gh-splitter" role="separator" aria-orientation="vertical" aria-label="Resize diff" aria-valuenow="380" aria-valuemin="280" aria-valuemax="572" tabindex="0"></div>
+  <section class="gh-pane mock-diff" aria-label="Diff, cost-center.service.ts">
+    <header class="mock-diff-header">
+  <div class="gh-hstack mock-diff-row">
+    <span class="gh-badge"><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span> Modified</span>
+    <span class="gh-strong">cost-center.service.ts</span><span class="gh-secondary gh-truncate">src/app/hrm/cost-centers</span><span class="gh-secondary">· app-front · TK-2636-taosif-Onboarding</span>
+  </div>
+  <div class="gh-hstack mock-diff-row">
+    <span class="gh-hstack gh-truncate mock-compare" title="Staged / last commit compared with Your working copy"><span class="gh-caption gh-secondary">Staged / last commit</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg><span class="gh-caption">Your working copy</span></span>
+    <div class="gh-segmented" role="radiogroup" aria-label="Diff layout">
+      <button role="radio" aria-checked="false" aria-disabled="true" title="Inline · not enough room for side by side"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-columns-2"/></svg>Side by side</button>
+      <button role="radio" aria-checked="true" class="is-selected" title="Inline · not enough room for side by side"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-rows-2"/></svg>Inline</button>
+    </div>
+    <span class="gh-caption" aria-live="polite">Change 1 of 2</span>
+    <button class="gh-btn gh-btn--icon" aria-label="Previous change" title="Previous change (Shift+F7)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-up"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Next change" title="Next change (F7)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-spacer"></span>
+    <button class="gh-btn gh-btn--sm gh-btn--primary" title="Adds this file to the next commit."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Stage file</button>
+    <button class="gh-btn gh-btn--icon" aria-label="Open in editor" title="Open in editor (Ctrl+O)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="More diff options" aria-haspopup="menu" title="Copy path, Open in file manager, Show whitespace changes, Wrap lines"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg></button>
+  </div>
+</header>
+    <div class="mock-diff-body">
+  <div class="gh-editor mock-editor mock-inline" role="textbox" aria-readonly="true" aria-multiline="true" tabindex="0" aria-label="cost-center.service.ts, changes against the last commit, app-front, read only">
+    <div class="gh-diff-collapsed" role="group" aria-label="9 unchanged lines"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg> 9 unchanged lines · <button class="gh-btn gh-btn--link gh-caption">Show 20 above</button> · <button class="gh-btn gh-btn--link gh-caption">Show all</button> · <button class="gh-btn gh-btn--link gh-caption">Show 20 below</button></div>
+    <div class="gh-line"><span class="gh-line__num">10</span><span class="gh-line__num">10</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">export</span> <span class="tok-keyword">class</span> <span class="tok-type">CostCenterService</span> {</span></div>
+<div class="gh-line"><span class="gh-line__num">11</span><span class="gh-line__num">11</span><span class="gh-line__sign"> </span><span class="gh-line__code">  <span class="tok-keyword">private</span> <span class="tok-keyword">readonly</span> baseUrl = <span class="tok-string">'/api/hrm/cost-centers'</span>;</span></div>
+<div class="gh-line"><span class="gh-line__num">12</span><span class="gh-line__num">12</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">13</span><span class="gh-line__num">13</span><span class="gh-line__sign"> </span><span class="gh-line__code">  <span class="tok-keyword">constructor</span>(<span class="tok-keyword">private</span> <span class="tok-keyword">readonly</span> http: <span class="tok-type">HttpClient</span>) {}</span></div>
+<div class="gh-line"><span class="gh-line__num">14</span><span class="gh-line__num">14</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">15</span><span class="gh-line__num">15</span><span class="gh-line__sign"> </span><span class="gh-line__code">  <span class="tok-function">getAll</span>(): <span class="tok-type">Observable</span>&lt;<span class="tok-type">CostCenter</span>[]&gt; {</span></div>
+<div class="gh-line gh-diff-line--del"><span class="gh-line__num">16</span><span class="gh-line__num"></span><span class="gh-line__sign">−</span><span class="gh-line__code">    <span class="tok-keyword">return</span> <span class="tok-keyword">this</span>.http.<span class="tok-function">get</span>&lt;<span class="tok-type">CostCenter</span>[]&gt;(<span class="tok-keyword">this</span>.baseUrl<span class="gh-diff-word--del">);</span></span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">16</span><span class="gh-line__sign">+</span><span class="gh-line__code">    <span class="tok-keyword">return</span> <span class="tok-keyword">this</span>.http.<span class="tok-function">get</span>&lt;<span class="tok-type">CostCenter</span>[]&gt;(<span class="tok-keyword">this</span>.baseUrl<span class="gh-diff-word--ins">, {</span></span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">17</span><span class="gh-line__sign">+</span><span class="gh-line__code"><span class="gh-diff-word--ins">      params: { active: <span class="tok-string">'true'</span> },</span></span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">18</span><span class="gh-line__sign">+</span><span class="gh-line__code"><span class="gh-diff-word--ins">    });</span></span></div>
+<div class="gh-line"><span class="gh-line__num">17</span><span class="gh-line__num">19</span><span class="gh-line__sign"> </span><span class="gh-line__code">  }</span></div>
+<div class="gh-line"><span class="gh-line__num">18</span><span class="gh-line__num">20</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">19</span><span class="gh-line__num">21</span><span class="gh-line__sign"> </span><span class="gh-line__code">  <span class="tok-function">getById</span>(id: number): <span class="tok-type">Observable</span>&lt;<span class="tok-type">CostCenter</span>&gt; {</span></div>
+    <div class="gh-diff-collapsed" role="group" aria-label="48 unchanged lines"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg> 48 unchanged lines · <button class="gh-btn gh-btn--link gh-caption">Show 20 above</button> · <button class="gh-btn gh-btn--link gh-caption">Show all</button> · <button class="gh-btn gh-btn--link gh-caption">Show 20 below</button></div>
+    <div class="gh-line"><span class="gh-line__num">68</span><span class="gh-line__num">70</span><span class="gh-line__sign"> </span><span class="gh-line__code">  }</span></div>
+<div class="gh-line"><span class="gh-line__num">69</span><span class="gh-line__num">71</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">72</span><span class="gh-line__sign">+</span><span class="gh-line__code">  <span class="tok-function">delete</span>(id: number): <span class="tok-type">Observable</span>&lt;<span class="tok-keyword">void</span>&gt; {</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">73</span><span class="gh-line__sign">+</span><span class="gh-line__code">    <span class="tok-keyword">return</span> <span class="tok-keyword">this</span>.http.<span class="tok-function">delete</span>&lt;<span class="tok-keyword">void</span>&gt;(<span class="tok-string">`${this.baseUrl}/${id}`</span>);</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">74</span><span class="gh-line__sign">+</span><span class="gh-line__code">  }</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">75</span><span class="gh-line__sign">+</span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">70</span><span class="gh-line__num">76</span><span class="gh-line__sign"> </span><span class="gh-line__code">  <span class="tok-keyword">private</span> <span class="tok-function">handleError</span>(error: <span class="tok-keyword">unknown</span>): <span class="tok-keyword">never</span> {</span></div>
+<div class="gh-line"><span class="gh-line__num">71</span><span class="gh-line__num">77</span><span class="gh-line__sign"> </span><span class="gh-line__code">    <span class="tok-keyword">throw</span> error;</span></div>
+<div class="gh-line"><span class="gh-line__num">72</span><span class="gh-line__num">78</span><span class="gh-line__sign"> </span><span class="gh-line__code">  }</span></div>
+<div class="gh-line"><span class="gh-line__num">73</span><span class="gh-line__num">79</span><span class="gh-line__sign"> </span><span class="gh-line__code">}</span></div>
+  </div>
+  <div class="gh-ruler" role="presentation" title="Overview: click to jump"><span class="mock-ruler-mark mock-ruler-mark--del" style="top:22%"></span><span class="mock-ruler-mark mock-ruler-mark--ins" style="top:24%"></span><span class="mock-ruler-mark mock-ruler-mark--ins" style="top:78%"></span></div>
+</div>
+  </section>
+</div>
+</main>
+
+</div>
+
+<footer class="gh-bottombar" role="contentinfo">
+  <div class="gh-hstack" aria-label="Jobs"><span class="gh-secondary">Nothing running</span></div>
+  <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+  <span class="gh-bottombar__spacer"></span>
+  
+  <a href="#" class="gh-link">Activity log</a>
+</footer>
+</div>
+
+</div>
+</section>
+<section class="mock-section" aria-labelledby="w2-h">
+  <h2 id="w2-h" class="mock-heading">2. Sidebar as rail, side-by-side diff of a staged file, context menu, commit not ready</h2>
+  <p class="mock-desc">Program.cs is in Staged changes, so the panes are "Last commit (HEAD)" and "Staged" and the context action is Unstage file. The message is still only "TK-2636: ", so Commit is aria-disabled with the reason in visible text (R18).</p>
+  <div class="gh-mock-window mock-window" role="region" aria-label="Changes screen with the sidebar as a rail, side-by-side diff and a context menu">
+<div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+<div class="gh-shell">
+<a class="gh-sr-only" href="#main-w2">Skip to main content</a>
+<header class="gh-topbar" role="banner">
+  <div class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></div>
+  <div class="gh-hstack mock-topbar-tools" role="toolbar" aria-label="App actions">
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" title="Workspace: acme-works. Open folder, import a VS Code workspace or rescan.">acme-works <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <button class="gh-btn mock-picker" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Target: Task TK-2636, 2 repos" title="Fetch, Pull, Push and pipelines act on these repos.">Target: Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate mock-chip-title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-topbar__spacer"></span>
+    <button class="gh-btn gh-btn--primary" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+    <button class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-vdivider" aria-hidden="true"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Push 2 repos" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+    <button class="mock-search" aria-label="Search or run a command (Ctrl+K)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span class="gh-truncate gh-secondary">Search or run a command…</span><kbd class="gh-kbd">Ctrl K</kbd></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net"><span class="gh-initials gh-initials--sm">TA</span></button>
+  </div>
+</header>
+<div class="gh-shell__body mock-body--rail">
+<nav class="gh-sidebar gh-sidebar--rail mock-rail" aria-label="Main">
+  <a href="#" class="mock-rail-item" aria-label="Repositories, 6 repos, 1 needs review" title="Repositories"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">6</span></a>
+  <a href="#" class="mock-rail-item is-selected" aria-label="Changes, 8 files" title="Changes" aria-current="page"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">8</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pull requests, 1 open" title="Pull requests"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Conflicts, 1 repo needs you" title="Conflicts"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pipelines" title="Pipelines"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg></a>
+  <div class="gh-sidebar__bottom mock-rail-bottom">
+    <a href="#" class="mock-rail-item" aria-label="Activity log" title="Activity log"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg></a>
+    <a href="#" class="mock-rail-item" aria-label="Settings" title="Settings"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg></a>
+  </div>
+</nav>
+<main class="gh-main" id="main-w2" aria-label="Changes">
+<div class="mock-split">
+  <section class="gh-pane mock-list" aria-label="Changes list">
+  <div class="gh-screen-header mock-list-header">
+    <h1 class="gh-screen-title">Changes</h1><span class="gh-secondary">8 files · 2 repos</span>
+    <span class="gh-spacer"></span>
+    <div class="gh-segmented" role="radiogroup" aria-label="View">
+      <button role="radio" aria-checked="true" class="is-selected" title="Shows files as a flat list with their folder.">List</button>
+      <button role="radio" aria-checked="false" title="Shows files grouped in folders.">Tree</button>
+    </div>
+    <button class="gh-btn gh-btn--icon" aria-label="Collapse all" title="Collapses every repo."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-list-collapse"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Refresh" title="Re-reads every repo’s changes from Git."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-refresh-cw"/></svg></button>
+  </div>
+  <div class="gh-toolbar mock-list-toolbar" role="toolbar" aria-label="Filter">
+    <label class="gh-search mock-grow"><span class="gh-sr-only">Filter files</span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input mock-grow" placeholder="Filter files…"></label>
+    <kbd class="gh-kbd">Ctrl F</kbd>
+  </div>
+  <section class="mock-commit" aria-label="Commit">
+  <div class="gh-hstack"><span id="cb2-scope-label">Commit in</span><button class="gh-select mock-scope" aria-labelledby="cb2-scope-label cb2-scope" id="cb2-scope" aria-haspopup="listbox">app-front · 2 changes <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+  <label class="gh-sr-only" for="cb2-msg">Commit message</label>
+  <textarea id="cb2-msg" class="gh-textarea gh-code mock-msg" rows="3" aria-describedby="cb2-desc">TK-2636: </textarea>
+  <span id="cb2-desc" class="gh-sr-only">Commits 2 files in app-front. Nothing staged, so all changes are committed.</span>
+  <p class="gh-caption">Nothing staged, so all 2 changed files will be committed. <button class="gh-btn gh-btn--link gh-caption">Choose files…</button></p>
+  
+  <p class="gh-caption mock-warning-text" id="cb2-reason"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg> Write what you changed after TK-2636:</p>
+  <div class="gh-hstack">
+    <span class="gh-spacer"></span>
+    <button class="gh-btn" title="Commits, then pushes each repo that committed. Publishes the branch if it isn't on origin yet. Ctrl+Shift+Enter" aria-disabled="true" aria-describedby="cb2-reason">Commit &amp; push</button>
+    <button class="gh-btn gh-btn--primary" title="Saves the staged files as a new commit on each repo's current branch. Nothing is pushed." aria-disabled="true" aria-describedby="cb2-reason"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-commit-horizontal"/></svg>Commit 2 files<kbd class="gh-kbd">Ctrl Enter</kbd></button>
+  </div>
+</section>
+  
+  <div class="gh-pane__body"><div role="tree" aria-label="Changed files" aria-multiselectable="true" class="mock-tree">
+  <div role="treeitem" aria-level="1" aria-setsize="2" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--repo" aria-label="app-api, on dev, merging TK-2636-taosif-Onboarding, 6 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>app-api</span><span class="gh-code gh-secondary gh-truncate mock-branch">dev</span><span class="gh-pill gh-pill--conflict" title="Merging TK-2636-taosif-Onboarding into dev"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg>Merging</span><span class="gh-spacer"></span><a href="#" class="gh-link gh-caption mock-finish">Finish on Conflicts <svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Merge changes, 3 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Merge changes</span><span class="gh-count">3</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm" title="Opens the merge editor on the first unresolved file.">Resolve all…</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file " aria-label="Api.csproj, Api, conflicted, 6 conflicts" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Api.csproj</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="6 conflicts">6 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="DeleteOnboarding.cs, Services/HrmService/Features, conflicted, 2 conflicts" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">DeleteOnboarding.cs</span><span class="gh-folder mock-file__folder">Services/HrmService/Features</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="2 conflicts">2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file " aria-label="DeleteOnboardingTests.cs, Tests/HrmService.IntegrationTests, conflicted, 1 conflict" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">DeleteOnboardingTests.cs</span><span class="gh-folder mock-file__folder">Tests/HrmService.IntegrationTests</span>
+    <span class="gh-row__slot"><span class="gh-counts" title="1 conflicts">1 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="2" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Staged changes, 3 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Staged changes</span><span class="gh-count">3</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm" aria-label="Unstage all 3 files in app-api" title="Unstages all 3 files in app-api. Your edits stay."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg> all</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file is-selected" aria-label="Program.cs, Api, modified, 8 added, 2 removed, staged" aria-selected="true">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Program.cs</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-label="Open Program.cs in editor" title="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Unstage Program.cs" title="Takes this file out of the next commit and keeps your changes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="OnboardingController.cs, Api/Controllers, added, 41 added, 0 removed, staged" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">OnboardingController.cs</span><span class="gh-folder mock-file__folder">Api/Controllers</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+41</span> <span class="gh-counts__del">−0</span></span></span><span class="gh-status gh-status--A" title="Added" aria-hidden="true">A</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file " aria-label="appsettings.json, Api, modified, 3 added, 1 removed, staged" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">appsettings.json</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+3</span> <span class="gh-counts__del">−1</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="1" aria-setsize="2" aria-posinset="2" aria-expanded="true" class="gh-row gh-row--repo" aria-label="app-front, on TK-2636-taosif-Onboarding, 2 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>app-front</span><span class="gh-code gh-secondary gh-truncate mock-branch">TK-2636-taosif-Onboarding</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">2 changes</span>
+  </div>
+  <div role="treeitem" aria-level="2" aria-setsize="1" aria-posinset="1" aria-expanded="true" class="gh-row gh-row--section gh-indent-1" aria-label="Changes, 2 files, expanded">
+    <span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><span>Changes</span><span class="gh-count">2</span><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm gh-btn--danger-text" aria-label="Discard all changes in app-front" title="Discards all changes in app-front, after showing what will be lost."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg> all</button><button class="gh-btn gh-btn--sm" aria-label="Stage all 2 files in app-front" title="Stages all 2 files in app-front."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> all</button>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="1" class="gh-row gh-indent-2 mock-file " aria-label="cost-center.service.ts, src/app/hrm/cost-centers, modified, 22 added, 4 removed" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center.service.ts</span><span class="gh-folder mock-file__folder">src/app/hrm/cost-centers</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+22</span> <span class="gh-counts__del">−4</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="2" class="gh-row gh-indent-2 mock-file " aria-label="cost-center-list.component.html, src/app/hrm/cost-centers/list, modified, 5 added, 1 removed" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center-list.component.html</span><span class="gh-folder mock-file__folder">src/app/hrm/cost-centers/list</span>
+    <span class="gh-row__slot"><span class="gh-counts"><span class="gh-counts__add">+5</span> <span class="gh-counts__del">−1</span></span></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+</div></div>
+</section>
+  <div class="gh-splitter" role="separator" aria-orientation="vertical" aria-label="Resize diff" aria-valuenow="380" aria-valuemin="280" aria-valuemax="680" tabindex="0"></div>
+  <section class="gh-pane mock-diff" aria-label="Diff, Program.cs">
+    <header class="mock-diff-header">
+  <div class="gh-hstack mock-diff-row">
+    <span class="gh-badge"><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span> Modified</span>
+    <span class="gh-strong">Program.cs</span><span class="gh-secondary gh-truncate">Api</span><span class="gh-secondary">· app-api · dev</span>
+  </div>
+  <div class="gh-hstack mock-diff-row">
+    <span class="gh-hstack gh-truncate mock-compare" title="Last commit (HEAD) compared with Staged"><span class="gh-caption gh-secondary">Last commit (HEAD)</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg><span class="gh-caption">Staged</span></span>
+    <div class="gh-segmented" role="radiogroup" aria-label="Diff layout">
+      <button role="radio" aria-checked="true" class="is-selected" title="Side by side"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-columns-2"/></svg>Side by side</button>
+      <button role="radio" aria-checked="false" title="Inline"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-rows-2"/></svg>Inline</button>
+    </div>
+    <span class="gh-caption" aria-live="polite">Change 1 of 2</span>
+    <button class="gh-btn gh-btn--icon" aria-label="Previous change" title="Previous change (Shift+F7)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-up"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Next change" title="Next change (F7)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-spacer"></span>
+    <button class="gh-btn gh-btn--sm" title="Takes this file out of the next commit and keeps your changes."><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg>Unstage file</button>
+    <button class="gh-btn gh-btn--sm" title="Open in editor (Ctrl+O)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg>Open in editor</button>
+    <button class="gh-btn gh-btn--icon" aria-label="More diff options" aria-haspopup="menu" title="Copy path, Open in file manager, Show whitespace changes, Wrap lines"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg></button>
+  </div>
+</header>
+    <div class="mock-diff-body">
+  <div class="gh-editor mock-editor mock-side" role="textbox" aria-readonly="true" aria-multiline="true" tabindex="0" aria-label="Program.cs, last commit, app-api, read only">
+      <div class="gh-diff-collapsed" role="group" aria-label="7 unchanged lines"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg> 7 unchanged lines · <button class="gh-btn gh-btn--link gh-caption">Show 20 above</button> · <button class="gh-btn gh-btn--link gh-caption">Show all</button> · <button class="gh-btn gh-btn--link gh-caption">Show 20 below</button></div>
+      <div class="gh-line"><span class="gh-line__num">8</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">var</span> builder = <span class="tok-type">WebApplication</span>.<span class="tok-type">CreateBuilder</span>(args);</span></div>
+<div class="gh-line"><span class="gh-line__num">9</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">10</span><span class="gh-line__sign"> </span><span class="gh-line__code">builder.<span class="tok-type">Services</span>.<span class="tok-type">AddControllers</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">11</span><span class="gh-line__sign"> </span><span class="gh-line__code">builder.<span class="tok-type">Services</span>.<span class="tok-type">AddHrmServices</span>(builder.<span class="tok-type">Configuration</span>);</span></div>
+<div class="gh-line gh-diff-spacer" aria-hidden="true"><span class="gh-line__num mock-spacer-num"></span><span class="gh-line__sign"></span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">12</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">13</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">var</span> app = builder.<span class="tok-type">Build</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">14</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">15</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">UseRouting</span>();</span></div>
+<div class="gh-line gh-diff-line--del"><span class="gh-line__num">16</span><span class="gh-line__sign">−</span><span class="gh-line__code">app.<span class="tok-type">Use</span><span class="gh-diff-word--del"><span class="tok-type">Auth</span></span>();</span></div>
+<div class="gh-line gh-diff-spacer" aria-hidden="true"><span class="gh-line__num mock-spacer-num"></span><span class="gh-line__sign"></span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">17</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">MapControllers</span>();</span></div>
+      <div class="gh-diff-collapsed" role="group" aria-label="36 unchanged lines"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg> 36 unchanged lines · <button class="gh-btn gh-btn--link gh-caption">Show 20 above</button> · <button class="gh-btn gh-btn--link gh-caption">Show all</button> · <button class="gh-btn gh-btn--link gh-caption">Show 20 below</button></div>
+      <div class="gh-line"><span class="gh-line__num">54</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">Run</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">55</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line gh-diff-line--del"><span class="gh-line__num">56</span><span class="gh-line__sign">−</span><span class="gh-line__code"><span class="gh-diff-word--del"><span class="tok-keyword">public</span> partial <span class="tok-keyword">class</span> <span class="tok-type">Program</span> { }</span></span></div>
+    </div>
+  <div class="gh-diff-divider"></div>
+  <div class="gh-editor mock-editor mock-side" role="textbox" aria-readonly="true" aria-multiline="true" tabindex="0" aria-label="Program.cs, staged, app-api, read only">
+      <div class="gh-diff-collapsed" aria-hidden="true"></div>
+      <div class="gh-line"><span class="gh-line__num">8</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">var</span> builder = <span class="tok-type">WebApplication</span>.<span class="tok-type">CreateBuilder</span>(args);</span></div>
+<div class="gh-line"><span class="gh-line__num">9</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">10</span><span class="gh-line__sign"> </span><span class="gh-line__code">builder.<span class="tok-type">Services</span>.<span class="tok-type">AddControllers</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">11</span><span class="gh-line__sign"> </span><span class="gh-line__code">builder.<span class="tok-type">Services</span>.<span class="tok-type">AddHrmServices</span>(builder.<span class="tok-type">Configuration</span>);</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num">12</span><span class="gh-line__sign">+</span><span class="gh-line__code"><span class="gh-diff-word--ins">builder.<span class="tok-type">Services</span>.<span class="tok-type">AddOnboarding</span>(builder.<span class="tok-type">Configuration</span>);</span></span></div>
+<div class="gh-line"><span class="gh-line__num">13</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">14</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">var</span> app = builder.<span class="tok-type">Build</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">15</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line"><span class="gh-line__num">16</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">UseRouting</span>();</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num">17</span><span class="gh-line__sign">+</span><span class="gh-line__code">app.<span class="tok-type">Use</span><span class="gh-diff-word--ins"><span class="tok-type">Authentication</span></span>();</span></div>
+<div class="gh-line gh-diff-line--ins"><span class="gh-line__num">18</span><span class="gh-line__sign">+</span><span class="gh-line__code"><span class="gh-diff-word--ins">app.<span class="tok-type">UseAuthorization</span>();</span></span></div>
+<div class="gh-line"><span class="gh-line__num">19</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">MapControllers</span>();</span></div>
+      <div class="gh-diff-collapsed" aria-hidden="true"></div>
+      <div class="gh-line"><span class="gh-line__num">57</span><span class="gh-line__sign"> </span><span class="gh-line__code">app.<span class="tok-type">Run</span>();</span></div>
+<div class="gh-line"><span class="gh-line__num">58</span><span class="gh-line__sign"> </span><span class="gh-line__code"></span></div>
+<div class="gh-line gh-diff-spacer" aria-hidden="true"><span class="gh-line__num mock-spacer-num"></span><span class="gh-line__sign"></span><span class="gh-line__code"></span></div>
+    </div>
+  <div class="gh-ruler" role="presentation" title="Overview: click to jump"><span class="mock-ruler-mark mock-ruler-mark--ins" style="top:18%"></span><span class="mock-ruler-mark mock-ruler-mark--ins" style="top:42%"></span><span class="mock-ruler-mark mock-ruler-mark--del" style="top:90%"></span></div>
+</div>
+  </section>
+</div>
+<div class="gh-menu mock-ctx" role="menu" aria-label="Program.cs actions">
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg>Open diff<kbd class="gh-kbd">Enter</kbd></button>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg>Open in editor<kbd class="gh-kbd">Ctrl O</kbd></button>
+  <div class="gh-menu__sep" role="separator"></div>
+  <button class="gh-menu__item is-focus" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-minus"/></svg>Unstage</button>
+  <div class="gh-menu__sep" role="separator"></div>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copy path</button>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>Copy relative path</button>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-open"/></svg>Open in file manager</button>
+  <div class="gh-menu__sep" role="separator"></div>
+  <button class="gh-menu__item gh-menu__item--danger" role="menuitem"><svg class="gh-icon gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg>Discard changes…<kbd class="gh-kbd">Ctrl Delete</kbd></button>
+</div>
+</main>
+
+</div>
+
+<footer class="gh-bottombar" role="contentinfo">
+  <div class="gh-hstack" aria-label="Jobs"><span class="gh-secondary">Nothing running</span></div>
+  <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+  <span class="gh-bottombar__spacer"></span>
+  
+  <a href="#" class="gh-link">Activity log</a>
+</footer>
+</div>
+
+</div>
+</section>
+<section class="mock-section" aria-labelledby="rows-h">
+  <h2 id="rows-h" class="mock-heading">3. Row states</h2>
+  <p class="mock-desc">Multi-select bar, and Mark as resolved, which only works when the marker scan finds no conflict markers (R13).</p>
+  <div class="mock-specimens"><figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Multi-select (Shift / Mod)</figcaption>
+  <div class="mock-stage mock-w380" role="group" aria-label="Multi-select">
+  <div class="gh-row mock-multibar" role="toolbar" aria-label="3 files selected"><span class="gh-strong">3 files selected</span><span class="gh-spacer"></span>
+    <button class="gh-btn gh-btn--sm"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Stage 3</button><button class="gh-btn gh-btn--sm"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg>Unstage 3</button><button class="gh-btn gh-btn--sm gh-btn--danger-text"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg>Discard 3…</button></div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file is-selected" aria-label="Program.cs, selected" aria-selected="true">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Program.cs</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-label="Open Program.cs in editor" title="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Unstage Program.cs" title="Takes this file out of the next commit and keeps your changes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file is-selected-inactive mock-noactions" aria-label="appsettings.json, selected" aria-selected="true">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">appsettings.json</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+  <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="1" class="gh-row gh-indent-2 mock-file is-selected-inactive mock-noactions" aria-label="cost-center.service.ts, selected" aria-selected="true">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center.service.ts</span><span class="gh-folder mock-file__folder">src/app/hrm/cost-centers</span>
+    <span class="gh-row__slot"></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span>
+  </div>
+</div>
+</figure><figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Mark as resolved: not ready, and ready</figcaption>
+  <div class="mock-stage mock-w380">
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="1" class="gh-row gh-indent-2 mock-file is-hover is-focus" aria-label="Api.csproj, Api, conflicted, 6 conflicts" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">Api.csproj</span><span class="gh-folder mock-file__folder">Api</span>
+    <span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-label="Open Api.csproj in editor" title="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Resolve Api.csproj" title="Opens this file in the merge editor so you can choose what to keep."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg></button><button class="gh-btn gh-btn--icon" aria-disabled="true" aria-label="Mark Api.csproj as resolved" aria-describedby="mr-reason" title="Api.csproj still has conflict markers (first at line 42). Resolve it first."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-check"/></svg></button></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <div class="mock-tooltip-anchor"><span class="gh-tooltip" role="tooltip" id="mr-reason">Api.csproj still has conflict markers (first at line 42). Resolve it first.</span></div>
+  <div role="treeitem" aria-level="3" aria-setsize="3" aria-posinset="3" class="gh-row gh-indent-2 mock-file is-hover" aria-label="DeleteOnboardingTests.cs, no conflict markers left" aria-selected="false">
+    <svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">DeleteOnboardingTests.cs</span><span class="gh-folder mock-file__folder">Tests/HrmService.IntegrationTests</span>
+    <span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-label="Open DeleteOnboardingTests.cs in editor" title="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Resolve DeleteOnboardingTests.cs" title="Opens this file in the merge editor so you can choose what to keep."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Mark DeleteOnboardingTests.cs as resolved" title="Marks this conflicted file as done. Only works when no conflict markers are left."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-check"/></svg></button></span><span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+  </div>
+  <p class="gh-caption gh-secondary mock-pad">Second row: fixed in VS Code, no markers left, so Mark as resolved is enabled.</p>
+</div>
+</figure></div>
+</section>
+<section class="mock-section" aria-labelledby="commit-h">
+  <h2 id="commit-h" class="mock-heading">4. Commit box variants</h2>
+  <p class="mock-desc">Several repos in scope (goes through the shared preview), the soft first-line hint, and a detached HEAD.</p>
+  <div class="mock-specimens"><figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">2 repos with staged files, long first line</figcaption>
+  <div class="mock-stage mock-w380 mock-nopad"><section class="mock-commit" aria-label="Commit">
+  <div class="gh-hstack"><span id="cb3-scope-label">Commit in</span><button class="gh-select mock-scope" aria-labelledby="cb3-scope-label cb3-scope" id="cb3-scope" aria-haspopup="listbox">2 repos with staged files <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+  <label class="gh-sr-only" for="cb3-msg">Commit message</label>
+  <textarea id="cb3-msg" class="gh-textarea gh-code mock-msg" rows="3" aria-describedby="cb3-desc">TK-2636: Add onboarding delete endpoint and cost centre filter for the active list in the HRM screens</textarea>
+  <span id="cb3-desc" class="gh-sr-only">Commits 2 files in app-front. Nothing staged, so all changes are committed.</span>
+  
+  <p class="gh-caption gh-secondary">First line is 84 characters. Under 72 reads better on GitHub.</p>
+  <p class="gh-caption gh-secondary">Will commit 5 files in 2 repos. You'll see each repo before it runs.</p>
+  <div class="gh-hstack">
+    <span class="gh-spacer"></span>
+    <button class="gh-btn" title="Commits, then pushes each repo that committed. Publishes the branch if it isn't on origin yet. Ctrl+Shift+Enter">Commit &amp; push 2 repos</button>
+    <button class="gh-btn gh-btn--primary" title="Saves the staged files as a new commit on each repo's current branch. Nothing is pushed."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-commit-horizontal"/></svg>Commit 2 repos<kbd class="gh-kbd">Ctrl Enter</kbd></button>
+  </div>
+</section></div>
+</figure><figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Detached HEAD</figcaption>
+  <div class="mock-stage mock-w380 mock-nopad"><section class="mock-commit" aria-label="Commit">
+  <div class="gh-hstack"><span id="cb4-scope-label">Commit in</span><button class="gh-select mock-scope" aria-labelledby="cb4-scope-label cb4-scope" id="cb4-scope" aria-haspopup="listbox">app-scheduler-api · 1 change <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+  <label class="gh-sr-only" for="cb4-msg">Commit message</label>
+  <textarea id="cb4-msg" class="gh-textarea gh-code mock-msg" rows="3" aria-describedby="cb4-desc"></textarea>
+  <span id="cb4-desc" class="gh-sr-only">Commits 2 files in app-front. Nothing staged, so all changes are committed.</span>
+  
+  
+  <p class="gh-caption mock-warning-text" id="cb4-reason"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg> app-scheduler-api isn't on a branch, so this commit will be easy to lose.</p>
+  <div class="gh-hstack">
+    <span class="gh-spacer"></span>
+    <button class="gh-btn" title="Commits, then pushes each repo that committed. Publishes the branch if it isn't on origin yet. Ctrl+Shift+Enter" aria-disabled="true" aria-describedby="cb4-reason">Commit &amp; push</button>
+    <button class="gh-btn gh-btn--primary" title="Saves the staged files as a new commit on each repo's current branch. Nothing is pushed." aria-disabled="true" aria-describedby="cb4-reason"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-commit-horizontal"/></svg>Commit 1 file<kbd class="gh-kbd">Ctrl Enter</kbd></button>
+  </div>
+<button class="gh-btn gh-btn--sm"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-git-branch"/></svg>Create a branch here first</button></section></div>
+</figure></div>
+</section>
+<section class="mock-section" aria-labelledby="confirm-h">
+  <h2 id="confirm-h" class="mock-heading">5. Confirmations</h2>
+  <p class="mock-desc">Discard (SAFE-03): initial focus on Cancel; neither Enter nor Mod+Enter confirms. Protected branch for a single-repo commit (SAFE-02, R16).</p>
+  <div class="mock-specimens">
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Discard, tracked files (Mod+Delete)</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--alert" role="alertdialog" aria-modal="true" aria-labelledby="dd-t" aria-describedby="dd-d">
+  <div class="gh-dialog__header"><h2 id="dd-t" class="gh-screen-title">Discard changes to 2 files in app-front?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded" id="dd-d"><p>These edits will be lost. Git doesn't keep a copy of them.</p>
+   <ul class="mock-loss">
+     <li><span class="gh-code">cost-center.service.ts</span> — 22 added, 4 removed lines</li>
+     <li><span class="gh-code">cost-center-list.component.html</span> — 5 added, 1 removed lines</li>
+   </ul></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn is-focus">Cancel</button><button class="gh-btn" title="Puts this repo's uncommitted changes aside as githeddle/TK-2636 so you can get them back later."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-archive"/></svg>Stash instead</button><button class="gh-btn gh-btn--danger">Discard 2 files</button></div>
+</div></div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Delete an untracked file</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--alert" role="alertdialog" aria-modal="true" aria-labelledby="df-t" aria-describedby="df-d">
+  <div class="gh-dialog__header"><h2 id="df-t" class="gh-screen-title">Delete 1 new file?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded" id="df-d"><p><span class="gh-code">notes.md</span> (3.2 KB) has never been committed. It will be deleted from disk.</p></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn is-focus">Cancel</button><button class="gh-btn gh-btn--danger">Delete 1 file</button></div>
+</div></div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Commit on a protected branch, single repo</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--alert" role="alertdialog" aria-modal="true" aria-labelledby="pd-t" aria-describedby="pd-d">
+  <div class="gh-dialog__header"><h2 id="pd-t" class="gh-screen-title">Commit to dev in app-api?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded" id="pd-d"><p class="gh-hstack"><svg class="gh-icon " style="color:var(--gh-warning)" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span>app-api is on dev, a protected branch. Usually you'd start a task first.</span></p></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn">Cancel</button><button class="gh-btn gh-btn--primary is-focus">Start a task with these changes</button><button class="gh-btn">Commit to dev</button></div>
+</div></div>
+</figure>
+    </div>
+</section>
+<section class="mock-section" aria-labelledby="special-h">
+  <h2 id="special-h" class="mock-heading">6. Diff special cases and states</h2>
+  <p class="mock-desc">Each special case is a centred card, at most 30rem wide. There is never a blank pane.</p>
+  <div class="mock-specimens">
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Binary</figcaption>
+  <div class="gh-card mock-special" role="group" aria-label="Binary file">
+  <svg class="gh-icon gh-icon--xl" aria-hidden="true" focusable="false"><use href="#i-file"/></svg>
+  <h3 class="gh-strong">Binary file</h3>
+  <p>Binary file. GitHeddle can't show its changes as text.</p>
+  <p class="gh-caption gh-secondary">24.1 KB → 25.3 KB</p>
+  <div class="gh-empty__actions"><button class="gh-btn">Open in editor</button><button class="gh-btn">Open in file manager</button></div>
+</div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Line endings only</figcaption>
+  <div class="gh-card mock-special" role="group" aria-label="Line endings only">
+  <svg class="gh-icon gh-icon--xl" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg>
+  <h3 class="gh-strong">Line endings only</h3>
+  <p>Only line endings changed (CRLF → LF). The text is the same.</p>
+  <p class="gh-caption gh-secondary">This often happens when another editor or OS saved the file.</p>
+  <div class="gh-empty__actions"><button class="gh-btn">Show line endings</button><button class="gh-btn gh-btn--danger-text">Discard changes…</button></div>
+</div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Conflicted file</figcaption>
+  <div class="gh-card mock-special" role="group" aria-label="Conflicted file">
+  <svg class="gh-icon gh-icon--xl" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg>
+  <h3 class="gh-strong">Conflicted file</h3>
+  <p>This file has 6 conflicts. Choose what to keep in the merge editor.</p>
+  
+  <div class="gh-empty__actions"><button class="gh-btn gh-btn--primary">Resolve conflicts</button></div>
+</div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Too large</figcaption>
+  <div class="gh-card mock-special" role="group" aria-label="Too large to show">
+  <svg class="gh-icon gh-icon--xl" aria-hidden="true" focusable="false"><use href="#i-file"/></svg>
+  <h3 class="gh-strong">Too large to show</h3>
+  <p>This file is too large to show here (12.4 MB; the limit is 5 MB).</p>
+  
+  <div class="gh-empty__actions"><button class="gh-btn">Open in editor</button><a href="#" class="gh-link">Change the limit in Settings</a></div>
+</div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Rename with edits</figcaption>
+  <div class="mock-stage mock-nopad mock-w380"><div class="mock-rename"><svg class="gh-icon " style="color:var(--gh-info)" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>Renamed from <span class="gh-code">Services/Old.cs</span> (92 % similar)</div><div class="gh-editor mock-inline"><div class="gh-line"><span class="gh-line__num">3</span><span class="gh-line__num">3</span><span class="gh-line__sign"> </span><span class="gh-line__code"><span class="tok-keyword">namespace</span> <span class="tok-type">Acme</span>.<span class="tok-type">Hrm</span>.<span class="tok-type">Services</span>;</span></div><div class="gh-line gh-diff-line--del"><span class="gh-line__num">4</span><span class="gh-line__num"></span><span class="gh-line__sign">−</span><span class="gh-line__code"><span class="tok-keyword">public</span> <span class="tok-keyword">class</span> <span class="gh-diff-word--del"><span class="tok-type">Old</span></span><span class="tok-type">Service</span></span></div><div class="gh-line gh-diff-line--ins"><span class="gh-line__num"></span><span class="gh-line__num">4</span><span class="gh-line__sign">+</span><span class="gh-line__code"><span class="tok-keyword">public</span> <span class="tok-keyword">class</span> <span class="gh-diff-word--ins"><span class="tok-type">Onboarding</span></span><span class="tok-type">Service</span></span></div></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Nothing selected</figcaption>
+  <div class="mock-stage mock-w380 gh-secondary mock-center">Select a file to see its changes.<br><span class="gh-caption">↑ ↓ move · Space stage · Enter open</span></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Diff error</figcaption>
+  <div class="mock-stage mock-w380"><svg class="gh-icon " style="color:var(--gh-danger)" aria-hidden="true" focusable="false"><use href="#i-octagon-x"/></svg> Couldn't load the diff of Program.cs in app-api: the file changed while it was being read.<div class="gh-empty__actions"><button class="gh-btn">Try again</button><button class="gh-btn">Show Git output</button></div></div>
+</figure>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="states-h">
+  <h2 id="states-h" class="mock-heading">7. Screen states</h2>
+  
+  <div class="mock-specimens">
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">No changes</figcaption>
+  <div class="mock-stage mock-w380"><div class="gh-empty"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-check"/></svg><h3 class="gh-screen-title">No changes in 6 repos.</h3><p class="gh-secondary">Edit files in your editor and they show up here.</p><p class="gh-caption gh-secondary">Checked 10 s ago.</p><div class="gh-empty__actions"><button class="gh-btn">Open in VS Code <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button><button class="gh-btn"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-refresh-cw"/></svg>Refresh</button></div></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Filter shows nothing</figcaption>
+  <div class="mock-stage mock-w380"><div class="gh-empty"><p>No files match "csproj" in 2 repos.</p><div class="gh-empty__actions"><button class="gh-btn">Clear filter</button></div></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Loading, no cache (after 150 ms)</figcaption>
+  <div class="mock-stage mock-w380 mock-nopad" aria-busy="true" aria-label="Loading changes">
+     <div class="gh-row gh-row--repo"><span class="gh-skeleton mock-sk-80"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-120"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-160"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div><div class="gh-row gh-row--repo"><span class="gh-skeleton mock-sk-80"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-120"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-160"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div><div class="gh-row gh-row--repo"><span class="gh-skeleton mock-sk-80"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-120"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div><div class="gh-row gh-indent-2"><span class="gh-skeleton mock-sk-160"></span><span class="gh-spacer"></span><span class="gh-skeleton mock-sk-32"></span></div>
+   </div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Busy repo and needs-review repo</figcaption>
+  <div class="mock-stage mock-w380 mock-nopad">
+     <div class="gh-row gh-row--repo"><span class="gh-twisty is-open" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>app-front</span><span class="gh-code gh-secondary gh-truncate mock-branch">TK-2636-taos…Onboarding</span><span class="gh-spacer"></span><svg class="gh-icon gh-spin" style="color:var(--gh-info)" aria-hidden="true" focusable="false"><use href="#i-loader-circle"/></svg><span class="gh-caption">Pushing…</span></div>
+     <div class="gh-row gh-indent-2 mock-file is-hover" aria-label="cost-center.service.ts"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file"/></svg><span class="mock-file__name">cost-center.service.ts</span><span class="gh-folder mock-file__folder">src/app/hrm</span><span class="gh-row__slot"><button class="gh-btn gh-btn--icon" aria-disabled="true" aria-label="Discard changes" title="Wait for Push to finish in app-front"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-undo-2"/></svg></button><button class="gh-btn gh-btn--icon" aria-label="Open file"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button class="gh-btn gh-btn--icon" aria-disabled="true" aria-label="Stage" title="Wait for Push to finish in app-front"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></span><span class="gh-status gh-status--M" title="Modified" aria-hidden="true">M</span></div>
+     <p class="gh-caption mock-pad mock-warning-text">Wait for Push to finish in app-front</p>
+     <div class="gh-row gh-row--repo"><span class="gh-twisty" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>vendor-sdk</span><span class="gh-spacer"></span><span class="gh-pill gh-pill--warning"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-shield-question"/></svg>Needs review</span><button class="gh-btn gh-btn--sm">Review</button></div>
+   </div>
+</figure>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="toasts-h">
+  <h2 id="toasts-h" class="mock-heading">8. Toasts</h2>
+  <p class="mock-desc">A failure toast is never the only place for the failure: the job chip keeps it until dismissed.</p>
+  <div class="mock-specimens">
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Commit result (4 s)</figcaption>
+  <div class="gh-toast gh-toast--success" role="status"><svg class="gh-icon " style="color:var(--gh-success)" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><div class="gh-toast__text">Committed 3 files to <span class="gh-code">TK-2636-taosif-Onboarding</span> in app-api · <span class="gh-code">9f3e2a1</span>. Not pushed yet.</div><button class="gh-btn gh-btn--icon" aria-label="Dismiss"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Hook failure (6 s, stays on the job chip)</figcaption>
+  <div class="gh-toast gh-toast--danger" role="status"><svg class="gh-icon " style="color:var(--gh-danger)" aria-hidden="true" focusable="false"><use href="#i-x"/></svg><div class="gh-toast__text">Commit stopped: app-front's pre-commit hook failed. Your changes are still there and nothing was committed.<div class="gh-btn-group mock-mt"><button class="gh-btn gh-btn--sm">Show Git output</button></div></div><button class="gh-btn gh-btn--icon" aria-label="Dismiss"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Stage failed, reverted (8 s, with actions)</figcaption>
+  <div class="gh-toast gh-toast--danger" role="status"><svg class="gh-icon " style="color:var(--gh-danger)" aria-hidden="true" focusable="false"><use href="#i-x"/></svg><div class="gh-toast__text">Couldn't stage Program.cs in app-api: another Git program is using the repo (index.lock). Close it, then try again.<div class="gh-btn-group mock-mt"><button class="gh-btn gh-btn--sm">Retry</button><button class="gh-btn gh-btn--sm">Show Git output</button></div></div><button class="gh-btn gh-btn--icon" aria-label="Dismiss"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
+</figure>
+</div>
+</section>
+</div>
+<script>
+document.querySelectorAll('[data-theme-choice]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var t = b.getAttribute('data-theme-choice');
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelectorAll('[data-theme-choice]').forEach(function (o) {
+      var on = o === b; o.classList.toggle('is-selected', on); o.setAttribute('aria-pressed', String(on));
+    });
+  });
+});
+</script>
+</body>
+</html>

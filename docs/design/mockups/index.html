@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup gallery · GitHeddle mockup</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Page helpers shared by this set of mockups. Every colour is a token. */
+.mock-frame { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.gh-mock-bar a { display: inline-flex; align-items: center; gap: var(--gh-space-2); }
+.gh-segmented > button { border-top: 0; border-bottom: 0; border-left: 0; font: inherit; font-size: var(--gh-text-caption-size); cursor: default; }
+.gh-mock-window .gh-scrim { top: 1.75rem; padding-top: var(--gh-space-8); }
+.gh-mock-window .gh-dialog { max-height: calc(100% - 4rem); }
+.tone-warning { color: var(--gh-warning); }
+.tone-danger { color: var(--gh-danger); }
+.tone-success { color: var(--gh-success); }
+.tone-info { color: var(--gh-info); }
+.tone-link { color: var(--gh-text-link); }
+.tone-primary { color: var(--gh-text-primary); }
+.tone-conflict { color: var(--gh-status-conflicted); }
+.nav-list, .plain-list { list-style: none; margin: 0; padding: 0; }
+.disc { background: none; border: 0; padding: 0; font: inherit; color: inherit; display: inline-flex; align-items: center; gap: var(--gh-space-2); cursor: default; }
+details > summary { list-style: none; cursor: default; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .gh-twisty .gh-icon { transform: rotate(90deg); }
+.contents { display: contents; }
+.scroll { flex: 1; min-height: 0; overflow: auto; }
+.gh-jobchip { border: 0; background: transparent; font: inherit; font-size: var(--gh-text-caption-size); }
+.account { border: 0; font-family: inherit; cursor: default; }
+.account--out { background: transparent; border: 1px solid var(--gh-border-strong); }
+.topbar-search { display: inline-flex; align-items: center; gap: var(--gh-space-3); flex: 0 1 12.5rem; min-width: 7.5rem; height: var(--gh-control-md); padding: 0 var(--gh-space-3) 0 var(--gh-space-4); background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-md); color: var(--gh-text-secondary); font: inherit; cursor: text; overflow: hidden; }
+.topbar-search > span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-chip code { color: var(--gh-text-primary); }
+.task-chip__title { max-width: 10rem; color: var(--gh-text-primary); }
+.target-picker.is-flash { background: var(--gh-info-soft); }
+.nav-item-trail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--gh-space-3); }
+.gh-nav-item .nav-item-trail .gh-count { margin-left: 0; }
+.gh-nav-item .gh-truncate { flex: 1; }
+.gh-nav-item code { font-size: var(--gh-text-caption-size); }
+.sidebar-sep { margin: var(--gh-space-3) 0 0; }
+.screen-header-title { display: flex; align-items: baseline; gap: var(--gh-space-4); min-width: 0; }
+.cell { display: flex; align-items: center; gap: var(--gh-space-3); min-width: 0; }
+.cell > .gh-truncate { flex: 1; }
+.cell .gh-row__actions { margin-left: auto; }
+.gh-table td.is-num, .gh-table th.is-num { text-align: right; }
+.table-wrap { flex: 1; min-height: 0; overflow: auto; }
+.section-head { display: flex; align-items: center; gap: var(--gh-space-4); padding: var(--gh-space-5) var(--gh-space-6) var(--gh-space-3); }
+.gs-line { display: flex; align-items: center; gap: var(--gh-space-4); min-height: 2.25rem; margin: var(--gh-space-4) var(--gh-space-6); padding: 0 var(--gh-space-3) 0 var(--gh-space-5); background: var(--gh-surface-raised); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); flex: none; }
+.next-step { display: flex; align-items: center; gap: var(--gh-space-5); padding: var(--gh-space-5); background: var(--gh-info-soft); border-radius: var(--gh-radius-lg); }
+.next-step > .gh-icon { color: var(--gh-info); }
+.next-step p { flex: 1; }
+.dp-section { display: flex; flex-direction: column; gap: var(--gh-space-2); }
+.dp-section > summary { display: flex; align-items: center; gap: var(--gh-space-2); height: var(--gh-row-height); }
+.dp-kv { display: grid; grid-template-columns: 4.5rem 1fr auto; align-items: center; column-gap: var(--gh-space-4); min-height: var(--gh-row-height); }
+.dp-line { display: flex; align-items: center; gap: var(--gh-space-4); min-height: var(--gh-row-height); min-width: 0; }
+.dp-line > .gh-truncate { flex: 1; }
+.merge-card { padding: var(--gh-space-5); background: var(--gh-merge-unresolved); border: 1px solid var(--gh-border-subtle); box-shadow: inset var(--gh-edge-width) 0 0 var(--gh-merge-unresolved-edge); border-radius: var(--gh-radius-lg); display: grid; gap: var(--gh-space-3); }
+.menu-pos { position: absolute; z-index: 20; }
+.sheet-card { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.sheet-card > h2 { color: var(--gh-text-primary); }
+.choice-tag { font-size: var(--gh-text-caption-size); color: var(--gh-success); font-weight: 600; }
+
+.gallery-head { display: flex; align-items: center; gap: var(--gh-space-5); }
+.gallery-head h1 { font-size: 1.25rem; line-height: 1.75rem; }
+.gallery-intro { max-width: 52rem; color: var(--gh-text-secondary); }
+.gallery { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: var(--gh-space-5); width: 100%; max-width: 80rem; }
+.gallery a { display: flex; flex-direction: column; gap: var(--gh-space-3); height: 100%; padding: var(--gh-space-6); background: var(--gh-surface-raised); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); color: var(--gh-text-primary); }
+.gallery a:hover { background: var(--gh-surface-hover); text-decoration: none; }
+.gallery .title { display: flex; align-items: center; gap: var(--gh-space-4); font-weight: 600; }
+.gallery .title .gh-icon { color: var(--gh-accent-indicator); }
+.gallery .file { margin-left: auto; font-size: var(--gh-text-caption-size); color: var(--gh-text-secondary); }
+.gallery .ids { display: flex; flex-wrap: wrap; gap: var(--gh-space-2); margin-top: auto; }
+.gallery p { color: var(--gh-text-secondary); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-folder-git-2" viewBox="0 0 24 24"><path d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"/><circle cx="13" cy="12" r="2"/><path d="M18 19c-2.8 0-5-2.2-5-5v8"/><circle cx="20" cy="19" r="2"/></symbol>
+<symbol id="i-file-diff" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></symbol>
+<symbol id="i-git-pull-request" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></symbol>
+<symbol id="i-git-pull-request-draft" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 6V5"/><path d="M18 11v-1"/><line x1="6" x2="6" y1="9" y2="21"/></symbol>
+<symbol id="i-git-compare" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></symbol>
+<symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+<symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-cloud-download" viewBox="0 0 24 24"><path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></symbol>
+<symbol id="i-arrow-down-to-line" viewBox="0 0 24 24"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></symbol>
+<symbol id="i-arrow-up-from-line" viewBox="0 0 24 24"><path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/></symbol>
+<symbol id="i-git-commit-horizontal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="3" x2="9" y1="12" y2="12"/><line x1="15" x2="21" y1="12" y2="12"/></symbol>
+<symbol id="i-git-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+<symbol id="i-git-merge" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+<symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+<symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol>
+<symbol id="i-square-terminal" viewBox="0 0 24 24"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></symbol>
+<symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+<symbol id="i-file-code" viewBox="0 0 24 24"><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/></symbol>
+<symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-shield-question" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-unlink" viewBox="0 0 24 24"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></symbol>
+<symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></symbol>
+<symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></symbol>
+<symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+<symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+<symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol>
+<symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-columns-3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-octagon-x" viewBox="0 0 24 24"><path d="m15 9-6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m9 9 6 6"/></symbol>
+<symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+</defs></svg>
+<nav class="gh-mock-bar" aria-label="Mockup controls">
+  <a href="index.html"><svg class="gh-icon gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All mockups</a>
+  <span class="gh-vdivider" aria-hidden="true"></span>
+  <strong>Mockup gallery</strong>
+  <span class="gh-secondary gh-truncate">All GitHeddle UI mockups</span>
+  <span class="gh-spacer"></span>
+  <span id="theme-label" class="gh-secondary">Theme</span>
+  <div class="gh-segmented" role="group" aria-labelledby="theme-label">
+    <button type="button" data-set-theme="light" aria-pressed="true" class="is-selected">Light</button>
+    <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+<div class="gh-mock-stage">
+
+<header class="gallery-head"><svg class="gh-logo" width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><h1>GitHeddle mockups</h1></header>
+<p class="gallery-intro">Static HTML mockups for the <a href="../ux-design.en.md">UI/UX design</a> (<a href="../ux-design.bn.md">বাংলা</a>). Every page uses <a href="tokens.css">tokens.css</a> only, switches between light and dark with the toggle at the top, and loads nothing from the network. App screens are drawn in a 1280 × 800 window; other states and parts are stacked below with captions.</p>
+<ul class="gallery" aria-label="Mockups">
+  <li><a href="dashboard.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg>Repositories dashboard<span class="file">dashboard.html</span></span>
+    <p>App shell and the Repositories dashboard in its normal state, with the details panel open on app-api; ticked repos and the target picker.</p>
+    <span class="ids"><span class="gh-badge">DASH-01..07</span><span class="gh-badge">§4</span><span class="gh-badge">§5</span><span class="gh-badge">§6</span></span>
+  </a></li>
+  <li><a href="task.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg>Task screen and Start task<span class="file">task.html</span></span>
+    <p>The Task screen for TK-2636 with its Next step card, and the Start task dialog with inputs and a live preview.</p>
+    <span class="ids"><span class="gh-badge">TASK-01/02</span><span class="gh-badge">§7</span></span>
+  </a></li>
+  <li><a href="first-run.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-play"/></svg>First run and GitHub sign-in<span class="file">first-run.html</span></span>
+    <p>Git check, the four setup steps including the repo trust step, the Git identity check, GitHub device-flow sign-in and the "Can Git reach GitHub?" check.</p>
+    <span class="ids"><span class="gh-badge">UX-01</span><span class="gh-badge">GS-01</span><span class="gh-badge">GS-08</span><span class="gh-badge">PR-01</span><span class="gh-badge">§17</span></span>
+  </a></li>
+  <li><a href="pull-requests.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg>Pull requests<span class="file">pull-requests.html</span></span>
+    <p>Task pull request status (PR-05) and the Create pull requests preview (Flow 3), plus the pull request details panel.</p>
+    <span class="ids"><span class="gh-badge">PR-02/03/05/11</span><span class="gh-badge">§14</span><span class="gh-badge">§6.3</span></span>
+  </a></li>
+  <li><a href="settings.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg>Settings<span class="file">settings.html</span></span>
+    <p>Every settings tab with scope tags, autosave and per-repo overrides.</p>
+    <span class="ids"><span class="gh-badge">CFG-01/02</span><span class="gh-badge">§16</span></span>
+  </a></li>
+  <li><a href="changes.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg>Changes<span class="file">changes.html</span></span>
+    <p>The Changes screen in list mode with the diff view open and the commit box.</p>
+    <span class="ids"><span class="gh-badge">CHG-01..07</span><span class="gh-badge">BULK-06</span><span class="gh-badge">§8</span><span class="gh-badge">§9</span></span>
+  </a></li>
+  <li><a href="merge-editor.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg>Conflicts and merge editor<span class="file">merge-editor.html</span></span>
+    <p>The Conflicts screen and the three-pane merge editor.</p>
+    <span class="ids"><span class="gh-badge">CONF-01..11</span><span class="gh-badge">§10</span><span class="gh-badge">§11</span></span>
+  </a></li>
+  <li><a href="pipelines.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg>Pipelines<span class="file">pipelines.html</span></span>
+    <p>The pipeline editor and the run grid with a paused repo.</p>
+    <span class="ids"><span class="gh-badge">PIPE-01..10</span><span class="gh-badge">§13</span></span>
+  </a></li>
+  <li><a href="action-flow.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg>Action flow<span class="file">action-flow.html</span></span>
+    <p>Preview, running in the bottom bar and job panel, a result with a failure; the protected-branch confirmation; the destructive confirmation.</p>
+    <span class="ids"><span class="gh-badge">BULK-03..05</span><span class="gh-badge">SAFE-01..04</span><span class="gh-badge">§12</span></span>
+  </a></li>
+  <li><a href="palette-states.html">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>Palette and states<span class="file">palette-states.html</span></span>
+    <p>Command palette, empty states, error messages, toasts and loading from cache.</p>
+    <span class="ids"><span class="gh-badge">UX-04/05/06</span><span class="gh-badge">PERF-02</span><span class="gh-badge">§18</span><span class="gh-badge">§21</span></span>
+  </a></li>
+  <li><a href="tokens.css">
+    <span class="title"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-file-code"/></svg>Design tokens<span class="file">tokens.css</span></span>
+    <p>Every token value in light and dark, base styles and the shared component classes used by all mockups.</p>
+    <span class="ids"><span class="gh-badge">§3</span></span>
+  </a></li>
+</ul>
+</div>
+<script>
+(function () {
+  var buttons = document.querySelectorAll('[data-set-theme]');
+  function apply(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    buttons.forEach(function (b) {
+      var on = b.getAttribute('data-set-theme') === theme;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('is-selected', on);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.getAttribute('data-set-theme')); });
+  });
+})();
+</script>
+</body>
+</html>

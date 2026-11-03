@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conflicts screen and merge editor · GitHeddle mockup</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Mockup page chrome (outside the app window). Only token variables. */
+body { background: var(--gh-surface-base); }
+.mock-bar__title { font-weight: 600; }
+.mock-page { display: flex; flex-direction: column; align-items: center; gap: var(--gh-space-8); padding: var(--gh-space-8) var(--gh-space-6) 6rem; }
+.mock-section { width: 1280px; display: flex; flex-direction: column; gap: var(--gh-space-5); }
+.mock-heading { font-size: var(--gh-text-screen-title-size); line-height: var(--gh-text-screen-title-lh); font-weight: 600; color: var(--gh-text-primary); }
+.mock-desc { color: var(--gh-text-secondary); max-width: 60rem; }
+.mock-window .gh-scrim { z-index: 20; }
+.mock-window .gh-toast-region { position: absolute; z-index: 30; }
+.mock-specimens { display: flex; flex-wrap: wrap; gap: var(--gh-space-7); align-items: flex-start; }
+.mock-specimen { display: flex; flex-direction: column; gap: var(--gh-space-3); }
+.mock-specimen--full { width: 100%; }
+.mock-stage { background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); padding: var(--gh-space-6); }
+.mock-stage--base { background: var(--gh-surface-base); }
+.mock-window .gh-scrim--static, .mock-specimen .gh-scrim--static { border-radius: var(--gh-radius-lg); }
+.mock-page .gh-scrim--static { min-height: 0; }
+
+.mock-filter { width: 15rem; }
+.gh-diff-collapsed { white-space: nowrap; overflow: hidden; }
+.gh-toast__text .gh-btn-group { display: flex; flex-wrap: wrap; gap: var(--gh-space-3); margin-top: var(--gh-space-3); }
+
+/* Small shell additions used only by these mockups */
+.mock-body--rail { grid-template-columns: var(--gh-sidebar-rail) 1fr auto; }
+.mock-rail { align-items: center; gap: var(--gh-space-1); padding: var(--gh-space-3) 0; overflow: visible; }
+.mock-rail-item { position: relative; display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--gh-radius-md); color: var(--gh-text-secondary); }
+.mock-rail-item:hover { background: var(--gh-surface-hover); text-decoration: none; }
+.mock-rail-item.is-selected { background: var(--gh-surface-selected); box-shadow: inset var(--gh-bar-width) 0 0 var(--gh-accent-indicator); }
+.mock-rail-item.is-selected .gh-icon { color: var(--gh-text-primary); }
+.mock-rail-count { position: absolute; top: -2px; right: -2px; height: 1rem; min-width: 1rem; font-size: var(--gh-text-caption-size); }
+.mock-rail-bottom { width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--gh-space-1); }
+.mock-topbar-tools { flex: 1; gap: var(--gh-space-3); }
+.mock-picker { min-width: 0; padding: 0 var(--gh-space-4); gap: var(--gh-space-3); }
+.mock-chip-title { max-width: 160px; }
+.mock-flash { background: var(--gh-info-soft); }
+.mock-search { display: inline-flex; align-items: center; gap: var(--gh-space-4); width: 13rem; height: var(--gh-control-md); padding: 0 var(--gh-space-4); font: inherit; background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-md); color: var(--gh-text-primary); text-align: left; }
+.mock-search > .gh-truncate { flex: 1; }
+.mock-disclosure { display: inline-flex; align-items: center; gap: var(--gh-space-2); padding: 0; border: 0; background: transparent; font: inherit; color: inherit; }
+.mock-dot-space { width: 6px; flex: none; }
+button.gh-jobchip { border: 0; background: transparent; font: inherit; font-size: inherit; }
+button.gh-nav-item, button.gh-menu__item { border: 0; background: transparent; font: inherit; width: 100%; text-align: left; color: inherit; }
+.gh-menu__item--danger { color: var(--gh-danger); }
+.gh-nav-item .gh-count + .gh-icon, .gh-nav-item .gh-count + .gh-dot { margin-left: calc(-1 * var(--gh-space-2)); }
+.mock-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 1.125rem; height: 1.125rem; border-radius: var(--gh-radius-full); background: var(--gh-info-soft); color: var(--gh-info); box-shadow: inset 0 0 0 1px var(--gh-info); font-size: var(--gh-text-caption-size); line-height: 1; font-weight: 600; flex: none; }
+
+/* Page-specific styles (token variables only) */
+
+.mock-cscroll { padding: var(--gh-space-6); }
+.mock-ccol { max-width: 60rem; margin: 0 auto; display: flex; flex-direction: column; gap: var(--gh-space-5); }
+.mock-explainer { display: flex; flex-direction: column; gap: var(--gh-space-3); background: var(--gh-info-soft); padding: var(--gh-space-5) var(--gh-space-6); }
+.mock-ccard { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.mock-cfiles { display: flex; flex-direction: column; border-top: 1px solid var(--gh-border-subtle); }
+.mock-cfile { display: flex; align-items: center; gap: var(--gh-space-4); height: 2rem; padding: 0 var(--gh-space-2); border-bottom: 1px solid var(--gh-border-subtle); }
+.mock-cfile__name { flex: none; width: 13rem; }
+.mock-cfile__folder { flex: 1; min-width: 0; }
+.mock-cfile__kind { width: 9rem; flex: none; }
+.mock-cfoot { padding-top: var(--gh-space-2); }
+.mock-file-menu { position: absolute; z-index: 20; left: 880px; top: 368px; min-width: 19rem; }
+.mock-merge { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.mock-filebar { height: 2.5rem; display: flex; align-items: center; gap: var(--gh-space-4); padding: 0 var(--gh-space-5); border-bottom: 1px solid var(--gh-border-subtle); background: var(--gh-surface-raised); flex: none; }
+.mock-ctoolbar { padding: 0 var(--gh-space-5); }
+.mock-coach { height: 2rem; display: flex; align-items: center; gap: var(--gh-space-3); padding: 0 var(--gh-space-5); background: var(--gh-info-soft); border-bottom: 1px solid var(--gh-border-subtle); flex: none; font-size: var(--gh-text-caption-size); }
+.mock-top { flex: 55 1 0; display: flex; min-height: 6.25rem; }
+.mock-bottom { flex: 45 1 0; display: flex; min-height: 6.25rem; }
+.mock-hsplit { height: 1px; margin: 0; }
+.mock-mpane { flex: 1; min-width: 0; }
+.mock-mtitle { height: 2.5rem; display: flex; flex-direction: column; justify-content: center; padding: 0 var(--gh-space-5); background: var(--gh-surface-raised); border-bottom: 1px solid var(--gh-border-subtle); flex: none; }
+.mock-mtitle__row { gap: var(--gh-space-3); }
+.mock-real { font-size: var(--gh-text-caption-size); }
+.mock-mbody { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+.mock-mbody.mock-auto { flex: none; }
+.mock-mgutter { flex: none; width: calc(2.5rem + 1.75rem); background: var(--gh-diff-gutter); border-right: 1px solid var(--gh-border-subtle); font-family: var(--gh-font-mono); font-size: var(--gh-text-code-size); }
+.mock-bottom .mock-mgutter { width: calc(2.5rem + 0.875rem); }
+.mock-gcell { display: flex; height: var(--gh-text-code-lh); align-items: center; }
+.mock-gcell--ph { height: calc(2.75rem + 2 * var(--gh-space-4)); }
+.mock-gnum { width: 2.5rem; padding-right: var(--gh-space-4); text-align: right; color: var(--gh-text-secondary); font-variant-numeric: tabular-nums; }
+.mock-gbox { width: 1.75rem; display: flex; justify-content: center; align-items: center; gap: 2px; }
+.mock-mchk { width: 1rem; height: 1rem; }
+.mock-mcode { flex: 1; min-width: 0; overflow: hidden; }
+.mock-mcode .gh-line__code { padding-left: var(--gh-space-5); }
+.mock-unused-incoming { box-shadow: inset var(--gh-edge-width) 0 0 var(--gh-merge-incoming-edge); }
+.mock-unused-incoming .tok-tag, .mock-unused-incoming .tok-attribute, .mock-unused-incoming .tok-string { color: var(--gh-text-secondary); }
+.mock-has-reset { position: relative; }
+.mock-reset { position: absolute; top: 2px; right: var(--gh-space-5); height: 1.125rem; font-family: var(--gh-font-ui); background: var(--gh-surface-overlay); }
+.mock-rmark { position: absolute; left: 2px; right: 2px; height: 3px; }
+.mock-rmark--unres { background: var(--gh-merge-unresolved-edge); }
+.mock-rmark--res { background: var(--gh-border-strong); }
+.mock-mfooter { height: 3rem; display: flex; align-items: center; gap: var(--gh-space-4); padding: 0 var(--gh-space-5); border-top: 1px solid var(--gh-border-subtle); background: var(--gh-surface-raised); flex: none; }
+.mock-accept { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.mock-accept .gh-caption { line-height: 0.875rem; }
+.mock-warn { color: var(--gh-warning); }
+.mock-ok { display: inline-flex; align-items: center; gap: var(--gh-space-3); color: var(--gh-success); }
+.mock-allgood { border-top: 0; }
+.mock-stack { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.mock-lossrow { height: auto; min-height: var(--gh-row-height); white-space: normal; padding: var(--gh-space-3) var(--gh-space-4); border-radius: var(--gh-radius-md); }
+.mock-right { justify-content: flex-end; display: flex; }
+.mock-list { margin: 0; padding-left: var(--gh-space-6); display: grid; gap: var(--gh-space-3); }
+.mock-w460 { width: 460px; } .mock-w640 { width: 640px; }
+.mock-nopad { padding: 0; overflow: hidden; }
+.mock-pad { padding: var(--gh-space-4) var(--gh-space-5); }
+.mock-scard { width: 30rem; display: flex; flex-direction: column; align-items: center; gap: var(--gh-space-5); text-align: center; }
+.mock-choices { gap: var(--gh-space-5); }
+.mock-choice { width: 200px; height: 88px; display: flex; align-items: flex-start; gap: var(--gh-space-4); padding: var(--gh-space-5); text-align: left; border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-lg); background: var(--gh-surface-sunken); }
+.mock-choice.is-checked { border: 2px solid var(--gh-accent-indicator); background: var(--gh-surface-selected); }
+.mock-strip { min-height: 3rem; border-radius: var(--gh-radius-md); }
+.mock-continueall { height: 3.5rem; display: flex; align-items: center; gap: var(--gh-space-5); padding: 0 var(--gh-space-6); background: var(--gh-surface-raised); border-top: 1px solid var(--gh-border-subtle); }
+.mock-mt { margin-top: var(--gh-space-3); }
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol><symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol><symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol><symbol id="i-octagon-x" viewBox="0 0 24 24"><path d="m15 9-6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m9 9 6 6"/></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-shield-question" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol><symbol id="i-arrow-down-to-line" viewBox="0 0 24 24"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></symbol><symbol id="i-arrow-up-from-line" viewBox="0 0 24 24"><path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/></symbol><symbol id="i-cloud-download" viewBox="0 0 24 24"><path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></symbol><symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></symbol><symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol><symbol id="i-git-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol><symbol id="i-git-merge" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></symbol><symbol id="i-git-compare" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></symbol><symbol id="i-git-commit-horizontal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="3" x2="9" y1="12" y2="12"/><line x1="15" x2="21" y1="12" y2="12"/></symbol><symbol id="i-git-pull-request" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></symbol><symbol id="i-folder-git-2" viewBox="0 0 24 24"><path d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"/><circle cx="13" cy="12" r="2"/><path d="M18 19c-2.8 0-5-2.2-5-5v8"/><circle cx="20" cy="19" r="2"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol><symbol id="i-file-diff" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></symbol><symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol><symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol><symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol><symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol><symbol id="i-square-terminal" viewBox="0 0 24 24"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2"/></symbol><symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol><symbol id="i-list-collapse" viewBox="0 0 24 24"><path d="m3 10 2.5-2.5L3 5"/><path d="m3 19 2.5-2.5L3 14"/><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol><symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-grip-vertical" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol><symbol id="i-columns-2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol><symbol id="i-rows-2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 12h18"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c2 0 2 .9 2 2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol><symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></symbol><symbol id="i-unlink" viewBox="0 0 24 24"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol></svg>
+<div class="gh-mock-bar" role="region" aria-label="Mockup controls">
+  <a href="index.html" class="gh-link"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All mockups</a>
+  <span class="mock-bar__title">Conflicts screen and merge editor</span>
+  <span class="gh-spacer"></span>
+  <span class="gh-caption gh-secondary" id="theme-label">Theme</span>
+  <div class="gh-segmented" role="group" aria-labelledby="theme-label">
+    <button type="button" class="is-selected" data-theme-choice="light" aria-pressed="true"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>Light</button>
+    <button type="button" data-theme-choice="dark" aria-pressed="false"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>Dark</button>
+  </div>
+</div>
+<div class="mock-page">
+<section class="mock-section" aria-labelledby="page-intro">
+  <h1 id="page-intro" class="mock-heading">Conflicts screen and merge editor</h1>
+  <p class="mock-desc">Covers CONF-01..11 (ux-design §10 and §11). Merge sides are teal (Incoming) and violet (Current), never green and red (R12). The example is app-api merging TK-2636-taosif-Onboarding into dev, paused by "Sync with dev", with 3 conflicted files; Api.csproj has 6 conflicts.</p>
+</section>
+<section class="mock-section" aria-labelledby="w1-h">
+  <h2 id="w1-h" class="mock-heading">1. Conflicts screen</h2>
+  <p class="mock-desc">One card per repo in a merge, rebase or cherry-pick. The ▾ menu on Api.csproj is open: "Use … for all" resolves every conflict with that side; it is not a whole-file checkout (R36). Continue merge is aria-disabled with its reason in visible text. Abort is a danger-text button, always visible.</p>
+  <div class="gh-mock-window mock-window" role="region" aria-label="Conflicts screen">
+<div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+<div class="gh-shell">
+<a class="gh-sr-only" href="#main-w1">Skip to main content</a>
+<header class="gh-topbar" role="banner">
+  <div class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></div>
+  <div class="gh-hstack mock-topbar-tools" role="toolbar" aria-label="App actions">
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" title="Workspace: acme-works. Open folder, import a VS Code workspace or rescan.">acme-works <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <button class="gh-btn mock-picker" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Target: Task TK-2636, 2 repos" title="Fetch, Pull, Push and pipelines act on these repos.">Target: Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate mock-chip-title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-topbar__spacer"></span>
+    <button class="gh-btn gh-btn--primary" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+    <button class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-vdivider" aria-hidden="true"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Push 2 repos" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+    <button class="mock-search" aria-label="Search or run a command (Ctrl+K)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span class="gh-truncate gh-secondary">Search or run a command…</span><kbd class="gh-kbd">Ctrl K</kbd></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net"><span class="gh-initials gh-initials--sm">TA</span></button>
+  </div>
+</header>
+<div class="gh-shell__body">
+<nav class="gh-sidebar" aria-label="Main">
+  <a href="#" class="gh-nav-item" aria-label="Repositories, 6 repos, 1 needs review"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="gh-count">6</span><svg class="gh-icon gh-icon--sm" style="color:var(--gh-warning)" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></a>
+  <a href="#" class="gh-nav-item" aria-label="Changes, 8 files"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="gh-count">8</span></a>
+  <a href="#" class="gh-nav-item" aria-label="Pull requests, 1 open"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item is-selected" aria-label="Conflicts, 1 repo needs you" aria-current="page" title="1 repo, 3 conflicted files"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item" aria-label="Pipelines"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span><span class="gh-spacer"></span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Tasks</h2></button><button class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub " aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate">Onboarding</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Active</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><span class="mock-dot-space" aria-hidden="true"></span><span class="gh-code">TK-2601</span><span class="gh-truncate">Cost centres</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><span class="mock-dot-space" aria-hidden="true"></span><span class="gh-secondary">Show all (6)</span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Pipelines</h2></button><button class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main → dev</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main</span><span class="gh-spacer"></span><span title="Ready-made. Duplicate it to change it"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span class="gh-truncate">Update from main, merge into dev</span><span title="Ready-made. Duplicate it to change it"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></span></a>
+  <div class="gh-sidebar__group"><button class="mock-disclosure" aria-expanded="true"><h2 class="gh-section-title">Groups</h2></button><button class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button></div>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>backend</span><span class="gh-count">4</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>frontend</span><span class="gh-count">1</span></a>
+  <a href="#" class="gh-nav-item gh-nav-item--sub "><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-layout-grid"/></svg><span>docs</span><span class="gh-count">2</span></a>
+  <div class="gh-sidebar__bottom">
+    <a href="#" class="gh-nav-item"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a>
+    <a href="#" class="gh-nav-item"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a>
+  </div>
+</nav>
+<main class="gh-main" id="main-w1" aria-label="Conflicts">
+<div class="gh-screen-header"><h1 class="gh-screen-title">Conflicts</h1><span class="gh-secondary">2 repos · 4 files · 9 conflicts left</span></div>
+<div class="gh-pane__body mock-cscroll">
+<div class="mock-ccol">
+  <aside class="gh-card mock-explainer" aria-labelledby="whatc">
+    <div class="gh-hstack"><svg class="gh-icon " style="color:var(--gh-info)" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><h2 id="whatc" class="gh-strong">What's a conflict?</h2><span class="gh-spacer"></span><button class="gh-btn gh-btn--sm gh-btn--ghost">Hide</button></div>
+    <p>Both sides changed the same lines, so Git needs you to choose what to keep. Nothing is committed until you click Continue, and Abort puts the repo back the way it was.</p>
+  </aside>
+
+  <article class="gh-card mock-ccard" aria-labelledby="c-api">
+    <div class="gh-hstack"><h2 id="c-api" class="gh-strong">app-api</h2></div>
+    <div class="gh-hstack"><span>Merging <code class="gh-code">TK-2636-taosif-Onboarding</code> into <code class="gh-code">dev</code></span><span class="gh-spacer"></span><span class="gh-secondary">Started by <a href="#" class="gh-link">Sync with dev</a> · paused</span></div>
+    <div class="gh-hstack"><span class="gh-meter" role="meter" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3" aria-label="1 of 3 files resolved" style="--value:0.333"><span></span></span><span class="gh-caption">1 of 3 files resolved</span></div>
+    <div role="list" aria-label="Conflicted files in app-api" class="mock-cfiles">
+      <div class="mock-cfile" role="listitem">
+    <span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+    <span class="gh-strong mock-cfile__name">Api.csproj</span>
+    <span class="gh-secondary gh-truncate mock-cfile__folder">Api</span>
+    <span class="mock-cfile__kind">6 conflicts</span>
+    <button class="gh-btn gh-btn--sm gh-btn--primary" title="Opens this file in the merge editor so you can choose what to keep.">Resolve</button>
+    <button class="gh-btn gh-btn--icon is-focus" aria-label="More options for Api.csproj" aria-haspopup="menu" aria-expanded="true"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+  </div>
+      <div class="mock-cfile" role="listitem">
+    <span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+    <span class="gh-strong mock-cfile__name">DeleteOnboarding.cs</span>
+    <span class="gh-secondary gh-truncate mock-cfile__folder">Services/HrmService/Features</span>
+    <span class="mock-cfile__kind">2 conflicts</span>
+    <button class="gh-btn gh-btn--sm gh-btn--primary" title="Opens this file in the merge editor so you can choose what to keep.">Resolve</button>
+    <button class="gh-btn gh-btn--icon" aria-label="More options for DeleteOnboarding.cs" aria-haspopup="menu"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+  </div>
+      <div class="mock-cfile" role="listitem">
+    <svg class="gh-icon " style="color:var(--gh-success)" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
+    <span class="gh-strong mock-cfile__name">DeleteOnboardingTests.cs</span>
+    <span class="gh-secondary gh-truncate mock-cfile__folder">Tests/HrmService.IntegrationTests</span>
+    <span class="mock-cfile__kind gh-secondary">Resolved</span>
+    <button class="gh-btn gh-btn--sm">Open</button>
+    <button class="gh-btn gh-btn--icon" aria-label="More options for DeleteOnboardingTests.cs" aria-haspopup="menu"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+  </div>
+    </div>
+    <div class="gh-hstack mock-cfoot">
+      <button class="gh-btn gh-btn--danger-text" title="Cancels the merge and puts the repo back as it was. Asks first.">Abort merge…</button>
+      <span class="gh-spacer"></span>
+      <span class="gh-caption gh-secondary" id="cont-api">Resolve 2 more files first.</span>
+      <button class="gh-btn gh-btn--primary" aria-disabled="true" aria-describedby="cont-api" title="Finishes the merge with a merge commit. Nothing is pushed.">Continue merge</button>
+    </div>
+  </article>
+
+  <article class="gh-card mock-ccard" aria-labelledby="c-sig">
+    <div class="gh-hstack"><h2 id="c-sig" class="gh-strong">app-signalr-api</h2></div>
+    <div class="gh-hstack"><span>Cherry-picking <code class="gh-code">a1b2c3d</code> "Fix validation" onto <code class="gh-code">dev</code></span><span class="gh-spacer"></span><span class="gh-secondary">Started outside GitHeddle</span></div>
+    <div class="gh-hstack"><span class="gh-meter" role="meter" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" aria-label="0 of 1 files resolved" style="--value:0"><span></span></span><span class="gh-caption">0 of 1 files resolved</span></div>
+    <div role="list" aria-label="Conflicted files in app-signalr-api" class="mock-cfiles">
+      <div class="mock-cfile" role="listitem">
+    <span class="gh-status gh-status--C" title="Conflicted" aria-hidden="true">!</span>
+    <span class="gh-strong mock-cfile__name">NotificationHub.cs</span>
+    <span class="gh-secondary gh-truncate mock-cfile__folder">Hubs</span>
+    <span class="mock-cfile__kind">1 conflict</span>
+    <button class="gh-btn gh-btn--sm gh-btn--primary" title="Opens this file in the merge editor so you can choose what to keep.">Resolve</button>
+    <button class="gh-btn gh-btn--icon" aria-label="More options for NotificationHub.cs" aria-haspopup="menu"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+  </div>
+    </div>
+    <div class="gh-hstack mock-cfoot">
+      <button class="gh-btn gh-btn--danger-text">Abort cherry-pick…</button>
+      <span class="gh-spacer"></span>
+      <span class="gh-caption gh-secondary" id="cont-sig">Resolve 1 more file first.</span>
+      <button class="gh-btn gh-btn--primary" aria-disabled="true" aria-describedby="cont-sig">Continue cherry-pick</button>
+    </div>
+  </article>
+</div>
+</div>
+<div class="gh-menu mock-file-menu" role="menu" aria-label="Api.csproj options">
+  <button class="gh-menu__item is-focus" role="menuitem">Use dev for all 6 conflicts</button>
+  <button class="gh-menu__item" role="menuitem">Use TK-2636-taosif-Onboarding for all 6 conflicts</button>
+  <div class="gh-menu__sep" role="separator"></div>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-external-link"/></svg>Open in external merge tool</button>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg>Open in editor</button>
+  <button class="gh-menu__item" role="menuitem"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-folder-open"/></svg>Open in file manager</button>
+</div>
+</main>
+
+</div>
+
+<footer class="gh-bottombar" role="contentinfo">
+  <div class="gh-hstack" aria-label="Jobs"><button class="gh-jobchip gh-jobchip--paused" aria-label="Sync with dev · 1 paused. Open job panel"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-pause"/></svg>Sync with dev · 1 paused</button></div>
+  <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+  <span class="gh-bottombar__spacer"></span>
+  
+  <a href="#" class="gh-link">Activity log</a>
+</footer>
+</div>
+
+</div>
+</section>
+<section class="mock-section" aria-labelledby="w2-h">
+  <h2 id="w2-h" class="mock-heading">2. Merge editor, conflict 3 of 6 active</h2>
+  <p class="mock-desc">Focus mode: sidebar collapsed to the rail, details panel hidden. Conflict 1 already took Current (scrolled out of view). Conflict 2 was edited by hand in Result: both checkboxes show the mixed state, and Result marks it with the pencil source and the edited colour. Line 11 was applied automatically from Incoming (I). Conflict 4 is still an unresolved placeholder. Conflict 3 is active: outlined in all three panes, and its Result placeholder offers Use incoming / Use current / Use both. Accept merge is aria-disabled with "Resolve 4 more conflicts first."</p>
+  <div class="gh-mock-window mock-window" role="region" aria-label="Merge editor on Api.csproj">
+<div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+<div class="gh-shell">
+<a class="gh-sr-only" href="#main-w2">Skip to main content</a>
+<header class="gh-topbar" role="banner">
+  <div class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></div>
+  <div class="gh-hstack mock-topbar-tools" role="toolbar" aria-label="App actions">
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" title="Workspace: acme-works. Open folder, import a VS Code workspace or rescan.">acme-works <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <button class="gh-btn mock-picker" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Target: Task TK-2636, 2 repos" title="Fetch, Pull, Push and pipelines act on these repos.">Target: Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate mock-chip-title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-topbar__spacer"></span>
+    <button class="gh-btn gh-btn--primary" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+    <button class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-vdivider" aria-hidden="true"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Push 2 repos" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+    <button class="mock-search" aria-label="Search or run a command (Ctrl+K)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span class="gh-truncate gh-secondary">Search or run a command…</span><kbd class="gh-kbd">Ctrl K</kbd></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net"><span class="gh-initials gh-initials--sm">TA</span></button>
+  </div>
+</header>
+<div class="gh-shell__body mock-body--rail">
+<nav class="gh-sidebar gh-sidebar--rail mock-rail" aria-label="Main">
+  <a href="#" class="mock-rail-item" aria-label="Repositories, 6 repos, 1 needs review" title="Repositories"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">6</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Changes, 8 files" title="Changes"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">8</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pull requests, 1 open" title="Pull requests"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item is-selected" aria-label="Conflicts, 1 repo needs you" title="Conflicts" aria-current="page"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pipelines" title="Pipelines"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg></a>
+  <div class="gh-sidebar__bottom mock-rail-bottom">
+    <a href="#" class="mock-rail-item" aria-label="Activity log" title="Activity log"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg></a>
+    <a href="#" class="mock-rail-item" aria-label="Settings" title="Settings"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg></a>
+  </div>
+</nav>
+<main class="gh-main" id="main-w2" aria-label="Merge editor">
+<div class="mock-merge">
+  <div class="mock-filebar">
+    <button class="gh-btn gh-btn--sm gh-btn--ghost" title="Back to Conflicts (Alt+←)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Conflicts</button>
+    <span class="gh-code">app-api / Api/Api.csproj</span>
+    <span class="gh-secondary gh-truncate">Merging <code class="gh-code">TK-2636-taosif-Onboarding</code> into <code class="gh-code">dev</code></span>
+    <span class="gh-spacer"></span>
+    <span class="gh-caption gh-secondary">File 1 of 3 in app-api · 6 conflicts in this repo</span>
+  </div>
+  <div class="gh-toolbar mock-ctoolbar" role="toolbar" aria-label="Conflict navigation">
+    <span class="gh-strong" aria-live="polite">Conflict 3 of 6</span>
+    <button class="gh-btn gh-btn--sm" title="Previous unresolved conflict (Shift+F8)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg>Previous</button>
+    <button class="gh-btn gh-btn--sm" title="Next unresolved conflict (F8)">Next<svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></button>
+    <span class="gh-pill gh-pill--conflict">4 unresolved</span>
+    <span class="gh-spacer"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Help with the merge editor" title="Not sure? Tick both, then fix Result by hand."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-circle-help"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="More merge options" aria-haspopup="menu" title="Open in external merge tool, Open in editor, Show Base (coming in v0.2)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg></button>
+  </div>
+  
+  <div class="mock-top">
+    <section class="gh-pane mock-mpane" aria-label="Incoming, TK-2636-taosif-Onboarding">
+  <div class="mock-mtitle gh-merge-pane-title--incoming"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Incoming</span><span class="gh-code mock-real">TK-2636-taosif-Onboarding</span><span class="gh-pill gh-pill--info">Your task</span></div><div class="gh-caption gh-secondary">Changes being merged in</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">12</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="mixed" tabindex="0" aria-label="Take incoming for conflict 2 of 6, lines 14 to 16, TK-2636-taosif-Onboarding, edited by hand"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take incoming for conflict 3 of 6, line 17, TK-2636-taosif-Onboarding"></span></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take incoming for conflict 4 of 6, line 22, TK-2636-taosif-Onboarding"></span></span></div><div class="mock-gcell"><span class="mock-gnum">23</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">24</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">25</span><span class="mock-gbox"></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" aria-readonly="true" tabindex="0" aria-label="Incoming, TK-2636-taosif-Onboarding"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Polly"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.4.1"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming is-active"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Swashbuckle.AspNetCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"6.6.2"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Onboarding\Onboarding.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+    <div class="gh-splitter" role="separator" aria-orientation="vertical" aria-label="Resize Incoming and Current" aria-valuenow="50" aria-valuemin="30" aria-valuemax="70" tabindex="0"></div>
+    <section class="gh-pane mock-mpane" aria-label="Current, dev">
+  <div class="mock-mtitle gh-merge-pane-title--current"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Current</span><span class="gh-code mock-real">dev</span></div><div class="gh-caption gh-secondary">The branch you're on</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">12</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="mixed" tabindex="0" aria-label="Take current for conflict 2 of 6, lines 14 to 15, dev, edited by hand"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div><div class="mock-gcell" aria-hidden="true"><span class="mock-gnum"></span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take current for conflict 3 of 6, line 16, dev"></span></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take current for conflict 4 of 6, line 21, dev"></span></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">23</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">24</span><span class="mock-gbox"></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" aria-readonly="true" tabindex="0" aria-label="Current, dev"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.0.2"</span> /&gt;</span></div><div class="gh-line gh-diff-spacer" aria-hidden="true"><span class="gh-line__code"></span></div></div><div class="gh-merge-region gh-merge-region--current is-active"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Swashbuckle.AspNetCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"6.5.0"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Payroll\Payroll.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+  </div>
+  <div class="gh-splitter gh-splitter--h mock-hsplit" role="separator" aria-orientation="horizontal" aria-label="Resize Result" aria-valuenow="45" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div>
+  <div class="mock-bottom">
+    <section class="gh-pane mock-mpane" aria-label="Result, Api.csproj, editable">
+  <div class="mock-mtitle gh-merge-pane-title--result"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Result</span><span class="gh-secondary">· Api.csproj · editable</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Saved into app-api when you accept</span></div><div class="gh-caption gh-secondary">The file that will be saved</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">10</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">11</span><span class="gh-line__source gh-merge-source--I" title="From incoming">I</span></div><div class="mock-gcell"><span class="mock-gnum">12</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="gh-line__source gh-merge-source--E" title="Edited by hand"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-pencil"/></svg></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="gh-line__source " ></span></div><div class="mock-gcell mock-gcell--ph" aria-hidden="true"></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="gh-line__source " ></span></div><div class="mock-gcell mock-gcell--ph" aria-hidden="true"></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="gh-line__source " ></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" tabindex="0" aria-label="Result, Api.csproj, editable"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div></div><div class="gh-merge-region gh-merge-region--auto-incoming" title="Applied automatically, no conflict"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Microsoft.EntityFrameworkCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.0.8"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--edited mock-has-reset"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Polly"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.4.1"</span> /&gt;</span></div><button class="gh-btn gh-btn--sm mock-reset" title="Undoable (Ctrl+Z)">Reset to unresolved</button></div><div class="gh-merge-region "><div class="gh-merge-placeholder is-active" role="group" aria-label="Unresolved conflict 3 of 6">
+  <span class="gh-strong">Unresolved conflict 3 of 6</span><span class="gh-secondary">Tick a side above, or:</span>
+  <button class="gh-btn gh-btn--sm" title="Alt+I">Use incoming</button><button class="gh-btn gh-btn--sm" title="Alt+C">Use current</button><button class="gh-btn gh-btn--sm" title="Alt+B">Use both</button>
+</div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-merge-placeholder" role="group" aria-label="Unresolved conflict 4 of 6"><span>Unresolved conflict 4 of 6</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+  </div>
+  <div class="mock-mfooter">
+    <button class="gh-btn" title="Uses TK-2636-taosif-Onboarding's side for every conflict in this file. Changes that didn't conflict stay.">Take all incoming</button>
+    <button class="gh-btn" title="Uses dev's side for every conflict in this file. Changes that didn't conflict stay.">Take all current</button>
+    <span class="gh-spacer"></span>
+    <span aria-live="polite">4 of 6 conflicts left</span>
+    <span class="gh-spacer"></span>
+    <span class="gh-caption mock-warn" id="acc-reason">Resolve 4 more conflicts first.</span>
+    <div class="mock-accept">
+      <button class="gh-btn gh-btn--primary" aria-disabled="true" aria-describedby="acc-reason acc-cap" title="Saves Result to the file, marks it resolved and opens the next conflicted file.">Accept merge<kbd class="gh-kbd">Ctrl S</kbd></button>
+      <span class="gh-caption gh-secondary" id="acc-cap">Saves this file and opens the next</span>
+    </div>
+  </div>
+</div>
+</main>
+
+</div>
+
+<footer class="gh-bottombar" role="contentinfo">
+  <div class="gh-hstack" aria-label="Jobs"><button class="gh-jobchip gh-jobchip--paused" aria-label="Sync with dev · 1 paused. Open job panel"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-pause"/></svg>Sync with dev · 1 paused</button></div>
+  <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+  <span class="gh-bottombar__spacer"></span>
+  
+  <a href="#" class="gh-link">Activity log</a>
+</footer>
+</div>
+
+</div>
+</section>
+<section class="mock-section" aria-labelledby="w3-h">
+  <h2 id="w3-h" class="mock-heading">3. First time: the coach strip</h2>
+  <p class="mock-desc">Shown once per kind of operation, under the conflict toolbar. Numbered badges also appear in the pane titles until "Got it".</p>
+  <div class="gh-mock-window mock-window" role="region" aria-label="Merge editor, first time, with the coach strip">
+<div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+<div class="gh-shell">
+<a class="gh-sr-only" href="#main-w3">Skip to main content</a>
+<header class="gh-topbar" role="banner">
+  <div class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></div>
+  <div class="gh-hstack mock-topbar-tools" role="toolbar" aria-label="App actions">
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" title="Workspace: acme-works. Open folder, import a VS Code workspace or rescan.">acme-works <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <button class="gh-btn mock-picker" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Target: Task TK-2636, 2 repos" title="Fetch, Pull, Push and pipelines act on these repos.">Target: Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    
+    <button class="gh-btn gh-btn--ghost mock-picker" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><span class="gh-code">TK-2636</span><span class="gh-truncate mock-chip-title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-topbar__spacer"></span>
+    <button class="gh-btn gh-btn--primary" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+    <button class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-play"/></svg>Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+    <span class="gh-vdivider" aria-hidden="true"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Push 2 repos" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+    <button class="mock-search" aria-label="Search or run a command (Ctrl+K)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span class="gh-truncate gh-secondary">Search or run a command…</span><kbd class="gh-kbd">Ctrl K</kbd></button>
+    <button class="gh-btn gh-btn--icon" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net"><span class="gh-initials gh-initials--sm">TA</span></button>
+  </div>
+</header>
+<div class="gh-shell__body mock-body--rail">
+<nav class="gh-sidebar gh-sidebar--rail mock-rail" aria-label="Main">
+  <a href="#" class="mock-rail-item" aria-label="Repositories, 6 repos, 1 needs review" title="Repositories"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">6</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Changes, 8 files" title="Changes"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">8</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pull requests, 1 open" title="Pull requests"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item is-selected" aria-label="Conflicts, 1 repo needs you" title="Conflicts" aria-current="page"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span class="gh-count mock-rail-count" aria-hidden="true">1</span></a>
+  <a href="#" class="mock-rail-item" aria-label="Pipelines" title="Pipelines"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg></a>
+  <div class="gh-sidebar__bottom mock-rail-bottom">
+    <a href="#" class="mock-rail-item" aria-label="Activity log" title="Activity log"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg></a>
+    <a href="#" class="mock-rail-item" aria-label="Settings" title="Settings"><svg class="gh-icon gh-icon--lg" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg></a>
+  </div>
+</nav>
+<main class="gh-main" id="main-w3" aria-label="Merge editor">
+<div class="mock-merge">
+  <div class="mock-filebar">
+    <button class="gh-btn gh-btn--sm gh-btn--ghost" title="Back to Conflicts (Alt+←)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Conflicts</button>
+    <span class="gh-code">app-api / Api/Api.csproj</span>
+    <span class="gh-secondary gh-truncate">Merging <code class="gh-code">TK-2636-taosif-Onboarding</code> into <code class="gh-code">dev</code></span>
+    <span class="gh-spacer"></span>
+    <span class="gh-caption gh-secondary">File 1 of 3 in app-api · 6 conflicts in this repo</span>
+  </div>
+  <div class="gh-toolbar mock-ctoolbar" role="toolbar" aria-label="Conflict navigation">
+    <span class="gh-strong" aria-live="polite">Conflict 3 of 6</span>
+    <button class="gh-btn gh-btn--sm" title="Previous unresolved conflict (Shift+F8)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg>Previous</button>
+    <button class="gh-btn gh-btn--sm" title="Next unresolved conflict (F8)">Next<svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></button>
+    <span class="gh-pill gh-pill--conflict">4 unresolved</span>
+    <span class="gh-spacer"></span>
+    <button class="gh-btn gh-btn--icon" aria-label="Help with the merge editor" title="Not sure? Tick both, then fix Result by hand."><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-circle-help"/></svg></button>
+    <button class="gh-btn gh-btn--icon" aria-label="More merge options" aria-haspopup="menu" title="Open in external merge tool, Open in editor, Show Base (coming in v0.2)"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-ellipsis"/></svg></button>
+  </div>
+  <div class="mock-coach" role="note"><span class="mock-num-badge">1</span>Top left: the changes coming in. <span class="mock-num-badge">2</span>Top right: what's on dev now. <span class="mock-num-badge">3</span>Bottom: the file that will be saved. For each conflict, tick the side to keep, or both.<span class="gh-spacer"></span><button class="gh-btn gh-btn--sm">Got it</button></div>
+  <div class="mock-top">
+    <section class="gh-pane mock-mpane" aria-label="Incoming, TK-2636-taosif-Onboarding">
+  <div class="mock-mtitle gh-merge-pane-title--incoming"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title"><span class="mock-num-badge">1</span> Incoming</span><span class="gh-code mock-real">TK-2636-taosif-Onboarding</span><span class="gh-pill gh-pill--info">Your task</span></div><div class="gh-caption gh-secondary">Changes being merged in</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">12</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="mixed" tabindex="0" aria-label="Take incoming for conflict 2 of 6, lines 14 to 16, TK-2636-taosif-Onboarding, edited by hand"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take incoming for conflict 3 of 6, line 17, TK-2636-taosif-Onboarding"></span></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take incoming for conflict 4 of 6, line 22, TK-2636-taosif-Onboarding"></span></span></div><div class="mock-gcell"><span class="mock-gnum">23</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">24</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">25</span><span class="mock-gbox"></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" aria-readonly="true" tabindex="0" aria-label="Incoming, TK-2636-taosif-Onboarding"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Polly"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.4.1"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming is-active"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Swashbuckle.AspNetCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"6.6.2"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Onboarding\Onboarding.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+    <div class="gh-splitter" role="separator" aria-orientation="vertical" aria-label="Resize Incoming and Current" aria-valuenow="50" aria-valuemin="30" aria-valuemax="70" tabindex="0"></div>
+    <section class="gh-pane mock-mpane" aria-label="Current, dev">
+  <div class="mock-mtitle gh-merge-pane-title--current"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title"><span class="mock-num-badge">2</span> Current</span><span class="gh-code mock-real">dev</span></div><div class="gh-caption gh-secondary">The branch you're on</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">12</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="mixed" tabindex="0" aria-label="Take current for conflict 2 of 6, lines 14 to 15, dev, edited by hand"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div><div class="mock-gcell" aria-hidden="true"><span class="mock-gnum"></span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take current for conflict 3 of 6, line 16, dev"></span></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take current for conflict 4 of 6, line 21, dev"></span></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">23</span><span class="mock-gbox"></span></div><div class="mock-gcell"><span class="mock-gnum">24</span><span class="mock-gbox"></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" aria-readonly="true" tabindex="0" aria-label="Current, dev"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.0.2"</span> /&gt;</span></div><div class="gh-line gh-diff-spacer" aria-hidden="true"><span class="gh-line__code"></span></div></div><div class="gh-merge-region gh-merge-region--current is-active"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Swashbuckle.AspNetCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"6.5.0"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Payroll\Payroll.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+  </div>
+  <div class="gh-splitter gh-splitter--h mock-hsplit" role="separator" aria-orientation="horizontal" aria-label="Resize Result" aria-valuenow="45" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div>
+  <div class="mock-bottom">
+    <section class="gh-pane mock-mpane" aria-label="Result, Api.csproj, editable">
+  <div class="mock-mtitle gh-merge-pane-title--result"><div class="gh-hstack mock-mtitle__row"><span class="mock-num-badge">3</span><span class="gh-section-title">Result</span><span class="gh-secondary">· Api.csproj · editable</span><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Saved into app-api when you accept</span></div><div class="gh-caption gh-secondary">The file that will be saved</div></div>
+  <div class="mock-mbody">
+    <div class="mock-mgutter" aria-hidden="true"><div class="mock-gcell"><span class="mock-gnum">10</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">11</span><span class="gh-line__source gh-merge-source--I" title="From incoming">I</span></div><div class="mock-gcell"><span class="mock-gnum">12</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">13</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">14</span><span class="gh-line__source gh-merge-source--E" title="Edited by hand"><svg class="gh-icon gh-icon--sm gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-pencil"/></svg></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="gh-line__source " ></span></div><div class="mock-gcell mock-gcell--ph" aria-hidden="true"></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">17</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">18</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">19</span><span class="gh-line__source " ></span></div><div class="mock-gcell mock-gcell--ph" aria-hidden="true"></div><div class="mock-gcell"><span class="mock-gnum">20</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">21</span><span class="gh-line__source " ></span></div><div class="mock-gcell"><span class="mock-gnum">22</span><span class="gh-line__source " ></span></div></div>
+    <div class="gh-editor mock-mcode" role="textbox" aria-multiline="true" tabindex="0" aria-label="Result, Api.csproj, editable"><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div></div><div class="gh-merge-region gh-merge-region--auto-incoming" title="Applied automatically, no conflict"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Microsoft.EntityFrameworkCore"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.0.8"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"MediatR"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"12.2.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"FluentValidation"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"11.9.0"</span> /&gt;</span></div></div><div class="gh-merge-region gh-merge-region--edited mock-has-reset"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Polly"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.4.1"</span> /&gt;</span></div><button class="gh-btn gh-btn--sm mock-reset" title="Undoable (Ctrl+Z)">Reset to unresolved</button></div><div class="gh-merge-region "><div class="gh-merge-placeholder is-active" role="group" aria-label="Unresolved conflict 3 of 6">
+  <span class="gh-strong">Unresolved conflict 3 of 6</span><span class="gh-secondary">Tick a side above, or:</span>
+  <button class="gh-btn gh-btn--sm" title="Alt+I">Use incoming</button><button class="gh-btn gh-btn--sm" title="Alt+C">Use current</button><button class="gh-btn gh-btn--sm" title="Alt+B">Use both</button>
+</div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">  &lt;<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">ProjectReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"..\Hrm\Hrm.csproj"</span> /&gt;</span></div></div><div class="gh-merge-region "><div class="gh-merge-placeholder" role="group" aria-label="Unresolved conflict 4 of 6"><span>Unresolved conflict 4 of 6</span></div></div><div class="gh-merge-region "><div class="gh-line"><span class="gh-line__code">  &lt;/<span class="tok-tag">ItemGroup</span>&gt;</span></div><div class="gh-line"><span class="gh-line__code"></span></div><div class="gh-line"><span class="gh-line__code">&lt;/<span class="tok-tag">Project</span>&gt;</span></div></div></div>
+    <div class="gh-ruler" role="presentation"><span class="mock-rmark mock-rmark--res" style="top:8%"></span><span class="mock-rmark mock-rmark--res" style="top:40%"></span><span class="mock-rmark mock-rmark--unres" style="top:62%"></span><span class="mock-rmark mock-rmark--unres" style="top:74%"></span><span class="mock-rmark mock-rmark--unres" style="top:86%"></span><span class="mock-rmark mock-rmark--unres" style="top:95%"></span></div>
+  </div>
+</section>
+  </div>
+  <div class="mock-mfooter">
+    <button class="gh-btn" title="Uses TK-2636-taosif-Onboarding's side for every conflict in this file. Changes that didn't conflict stay.">Take all incoming</button>
+    <button class="gh-btn" title="Uses dev's side for every conflict in this file. Changes that didn't conflict stay.">Take all current</button>
+    <span class="gh-spacer"></span>
+    <span aria-live="polite">4 of 6 conflicts left</span>
+    <span class="gh-spacer"></span>
+    <span class="gh-caption mock-warn" id="acc-reason">Resolve 4 more conflicts first.</span>
+    <div class="mock-accept">
+      <button class="gh-btn gh-btn--primary" aria-disabled="true" aria-describedby="acc-reason acc-cap" title="Saves Result to the file, marks it resolved and opens the next conflicted file.">Accept merge<kbd class="gh-kbd">Ctrl S</kbd></button>
+      <span class="gh-caption gh-secondary" id="acc-cap">Saves this file and opens the next</span>
+    </div>
+  </div>
+</div>
+</main>
+
+</div>
+
+<footer class="gh-bottombar" role="contentinfo">
+  <div class="gh-hstack" aria-label="Jobs"><button class="gh-jobchip gh-jobchip--paused" aria-label="Sync with dev · 1 paused. Open job panel"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-pause"/></svg>Sync with dev · 1 paused</button></div>
+  <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+  <span class="gh-bottombar__spacer"></span>
+  
+  <a href="#" class="gh-link">Activity log</a>
+</footer>
+</div>
+
+</div>
+</section>
+<section class="mock-section" aria-labelledby="pop-h">
+  <h2 id="pop-h" class="mock-heading">4. Popovers and both-sides tick order</h2>
+  
+  <div class="mock-specimens">
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Row menu → "Use dev for all": confirm popover</figcaption>
+  <div class="gh-popover" role="dialog" aria-labelledby="ua-t">
+  <p id="ua-t">Use dev's side for all 6 conflicts in Api.csproj? Changes that didn't conflict stay in the file.</p>
+  <div class="gh-empty__actions mock-right"><button class="gh-btn gh-btn--sm">Cancel</button><button class="gh-btn gh-btn--sm gh-btn--primary">Use dev for 6 conflicts</button></div>
+</div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Take all incoming over existing choices</figcaption>
+  <div class="gh-popover" role="dialog" aria-labelledby="ta-t">
+  <p id="ta-t">This replaces 2 choices you already made, including 1 hand edit.</p>
+  <div class="gh-empty__actions mock-right"><button class="gh-btn gh-btn--sm">Replace all 6</button><button class="gh-btn gh-btn--sm gh-btn--primary">Only the 4 unresolved</button></div>
+</div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">[?] help</figcaption>
+  <div class="gh-popover" role="dialog" aria-label="Merge editor help">
+  <ul class="mock-list">
+    <li>Not sure? Tick both, then fix Result by hand.</li>
+    <li>Everything in grey shading was combined automatically.</li>
+    <li>Changed your mind? <kbd class="gh-kbd">Ctrl Z</kbd></li>
+  </ul>
+</div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Both sides ticked: order badges</figcaption>
+  <div class="mock-stage mock-nopad mock-w460">
+  <div class="mock-mtitle gh-merge-pane-title--incoming"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Incoming</span><span class="gh-code mock-real">TK-2636-taosif-Onboarding</span><span class="gh-pill gh-pill--info">Your task</span></div><div class="gh-caption gh-secondary">Changes being merged in</div></div>
+  <div class="mock-mbody mock-auto">
+    <div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="true" tabindex="0" aria-label="Take incoming for conflict 2 of 6, lines 14 to 16"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"><span class="gh-order-badge" aria-label="taken first">1</span></span></div><div class="mock-gcell"><span class="mock-gnum">16</span><span class="mock-gbox"></span></div></div>
+    <div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Polly"</span> <span class="tok-attribute">Version</span>=<span class="tok-string">"8.4.1"</span> /&gt;</span></div></div></div>
+  </div>
+  <div class="mock-mtitle gh-merge-pane-title--current"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Current</span><span class="gh-code mock-real">dev</span></div><div class="gh-caption gh-secondary">The branch you're on</div></div>
+  <div class="mock-mbody mock-auto">
+    <div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="true" tabindex="0" aria-label="Take current for conflict 2 of 6, lines 14 to 15"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"><span class="gh-order-badge" aria-label="taken second">2</span></span></div></div>
+    <div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.0.2"</span> /&gt;</span></div></div></div>
+  </div>
+  <p class="gh-caption mock-pad"><button class="gh-btn gh-btn--link gh-caption">Swap order</button> appears in the gutter of the second-ticked side. Result stripe is split half incoming, half current.</p>
+</div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">One side ticked: the other is "not used"</figcaption>
+  <div class="mock-stage mock-nopad mock-w460">
+  <div class="mock-mtitle gh-merge-pane-title--incoming"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Incoming</span><span class="gh-code mock-real">TK-2636-taosif-Onboarding</span><span class="gh-pill gh-pill--info">Your task</span></div><div class="gh-caption gh-secondary">Changes being merged in</div></div>
+  <div class="mock-mbody mock-auto"><div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">7</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take incoming for conflict 1 of 6, line 7"></span></span></div></div><div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--unused mock-unused-incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">Version</span>&gt;2.4.0&lt;/<span class="tok-tag">Version</span>&gt;</span></div></div></div></div>
+  <div class="mock-mtitle gh-merge-pane-title--current"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title">Current</span><span class="gh-code mock-real">dev</span></div><div class="gh-caption gh-secondary">The branch you're on</div></div>
+  <div class="mock-mbody mock-auto"><div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">7</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="true" tabindex="0" aria-label="Take current for conflict 1 of 6, line 7"></span></span></div></div><div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--current"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">Version</span>&gt;2.3.1&lt;/<span class="tok-tag">Version</span>&gt;</span></div></div></div></div>
+  <p class="gh-caption gh-secondary mock-pad">Conflict 1: only Current ticked. Incoming drops to the plain surface with only its stripe left ("not used"); its checkbox stays clickable.</p>
+</div>
+</figure>
+    </div>
+</section>
+<section class="mock-section" aria-labelledby="dlg-h">
+  <h2 id="dlg-h" class="mock-heading">5. Dialogs</h2>
+  <p class="mock-desc">Abort is destructive (focus on Keep resolving; Enter never confirms). Continue on a protected branch shows the default message read-only (SAFE-02).</p>
+  <div class="mock-specimens">
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Abort merge</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--alert" role="alertdialog" aria-modal="true" aria-labelledby="ab-t" aria-describedby="ab-d">
+  <div class="gh-dialog__header"><h2 id="ab-t" class="gh-screen-title">Abort the merge in app-api?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded mock-stack" id="ab-d"><p>app-api goes back to <code class="gh-code">dev</code> at <code class="gh-code">a1b2c3d</code>, as it was before the merge.</p>
+   <div class="gh-row is-loss mock-lossrow"><svg class="gh-icon " style="color:var(--gh-danger)" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg>You'll lose: your choices in 1 resolved file (DeleteOnboardingTests.cs).</div>
+   <p class="gh-secondary">Sync with dev will stop for app-api.</p></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn is-focus">Keep resolving</button><button class="gh-btn gh-btn--danger">Abort merge in app-api</button></div>
+</div></div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Continue on a protected branch</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--alert" role="alertdialog" aria-modal="true" aria-labelledby="cp-t" aria-describedby="cp-d">
+  <div class="gh-dialog__header"><h2 id="cp-t" class="gh-screen-title">Continue the merge in app-api?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded mock-stack" id="cp-d"><p class="gh-hstack"><svg class="gh-icon " style="color:var(--gh-warning)" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span>This creates a merge commit on dev, a protected branch. Nothing is pushed.</span></p>
+   <label class="gh-field"><span class="gh-field__label">Commit message</span><input class="gh-input gh-input--code" readonly value="Merge branch 'TK-2636-taosif-Onboarding' into dev"></label></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn">Cancel</button><button class="gh-btn gh-btn--primary is-focus">Commit merge to dev</button></div>
+</div></div>
+</figure>
+      <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Leaving with unsaved choices</figcaption>
+  <div class="gh-scrim gh-scrim--static"><div class="gh-dialog gh-dialog--sm" role="alertdialog" aria-modal="true" aria-labelledby="lv-t" aria-describedby="lv-d">
+  <div class="gh-dialog__header"><h2 id="lv-t" class="gh-screen-title">Leave Api.csproj?</h2></div>
+  <div class="gh-dialog__body gh-dialog__body--padded mock-stack" id="lv-d"><p>Your 2 choices aren't saved yet.</p></div>
+  <div class="gh-dialog__footer"><span class="gh-spacer"></span><button class="gh-btn is-focus">Keep editing</button><button class="gh-btn gh-btn--danger-text">Discard my changes</button></div>
+</div></div>
+</figure>
+    </div>
+</section>
+<section class="mock-section" aria-labelledby="strip-h">
+  <h2 id="strip-h" class="mock-heading">6. Merge editor strips and footer states</h2>
+  <p class="mock-desc">Markers refused (CONF-11), changed on disk, and the footer once everything is resolved.</p>
+  <div class="mock-stage mock-nopad mock-w640">
+  <div class="gh-banner gh-banner--danger" role="alert"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-octagon-x"/></svg><span class="gh-banner__text">Not saved: line 42 still has a conflict marker (&lt;&lt;&lt;&lt;&lt;&lt;&lt;). Remove it, then accept again.</span><button class="gh-btn gh-btn--sm">Go to line 42</button></div>
+  <div class="gh-banner gh-banner--warning" role="status"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg><span class="gh-banner__text">Api.csproj changed on disk (maybe in VS Code).</span><button class="gh-btn gh-btn--sm">Reload and lose my choices</button><button class="gh-btn gh-btn--sm">Keep mine</button></div>
+  <div class="mock-mfooter mock-allgood"><button class="gh-btn">Take all incoming</button><button class="gh-btn">Take all current</button><span class="gh-spacer"></span><span class="mock-ok"><svg class="gh-icon gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>All conflicts resolved. Check Result, then accept.</span><span class="gh-spacer"></span><div class="mock-accept"><button class="gh-btn gh-btn--primary">Accept merge<kbd class="gh-kbd">Ctrl S</kbd></button><span class="gh-caption gh-secondary">Saves this file and opens the next</span></div></div>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="sp-h">
+  <h2 id="sp-h" class="mock-heading">7. Special files</h2>
+  <p class="mock-desc">The panes are replaced by a centred card.</p>
+  <div class="mock-specimens">
+  <div class="gh-card mock-scard" role="group" aria-labelledby="dm-t">
+    <h3 id="dm-t" class="gh-strong">TK-2636-taosif-Onboarding deleted this file. dev changed it (12 lines).</h3>
+    <div role="radiogroup" aria-label="What to keep" class="gh-hstack mock-choices">
+      <label class="mock-choice is-checked"><span class="gh-radio" aria-checked="true"></span><span><span class="gh-strong">Keep the file</span><br><span class="gh-caption gh-secondary">dev's version</span></span></label>
+      <label class="mock-choice"><span class="gh-radio" aria-checked="false"></span><span><span class="gh-strong">Delete the file</span></span></label>
+    </div>
+    <div class="mock-right"><button class="gh-btn gh-btn--primary">Accept merge<kbd class="gh-kbd">Ctrl S</kbd></button></div>
+  </div>
+  <div class="gh-card mock-scard" role="group" aria-labelledby="bin-t">
+    <h3 id="bin-t" class="gh-strong">Both sides changed this binary file. Choose one.</h3>
+    <div class="gh-empty__actions"><button class="gh-btn">Use incoming · 24.1 KB</button><button class="gh-btn">Use current · 25.3 KB</button></div>
+    <button class="gh-btn gh-btn--ghost"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-external-link"/></svg>Open in external merge tool</button>
+  </div>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="cs-h">
+  <h2 id="cs-h" class="mock-heading">8. Conflicts card states</h2>
+  
+  <div class="mock-specimens">
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">After Continue, with a paused run</figcaption>
+  <div class="mock-stage mock-w640"><div class="gh-banner gh-banner--success mock-strip" role="status"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-check"/></svg><span class="gh-banner__text">Merge finished in app-api · <code class="gh-code">9f3e2a1</code> on dev · not pushed</span></div><div class="gh-hstack mock-pad">Resume Sync with dev for app-api?<span class="gh-spacer"></span><button class="gh-btn gh-btn--sm gh-btn--primary">Resume</button><button class="gh-btn gh-btn--sm">Later</button></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Continue not ready: markers left</figcaption>
+  <div class="mock-stage mock-w640"><div class="mock-cfile"><svg class="gh-icon " style="color:var(--gh-warning)" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg><span class="gh-strong mock-cfile__name">Api.csproj</span><span class="gh-secondary mock-cfile__folder">Api</span><span class="mock-cfile__kind mock-warn">Markers at line 42</span><button class="gh-btn gh-btn--sm">Open</button></div><div class="gh-hstack mock-cfoot"><span class="gh-spacer"></span><span class="gh-caption gh-secondary" id="mk-r">Api.csproj is marked resolved but still has conflict markers at line 42.</span><button class="gh-btn gh-btn--primary" aria-disabled="true" aria-describedby="mk-r">Continue merge</button></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Continue all (2 or more cards resolved)</figcaption>
+  <div class="mock-stage mock-w640 mock-nopad"><div class="mock-continueall">All 2 repos are resolved.<span class="gh-spacer"></span><button class="gh-btn gh-btn--primary">Continue all · 2 repos</button></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Hook failure on Continue</figcaption>
+  <div class="mock-stage mock-w640"><div class="gh-banner gh-banner--danger" role="alert"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg><span class="gh-banner__text">Continue stopped: app-api's pre-commit hook failed. Fix what it reports, then Continue again.</span><button class="gh-btn gh-btn--sm">Show Git output</button></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">Empty</figcaption>
+  <div class="mock-stage mock-w640"><div class="gh-empty"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><h3 class="gh-screen-title">No conflicts.</h3><p class="gh-secondary">Repos that stop in a merge or rebase show up here.</p><div class="gh-empty__actions"><button class="gh-btn">Go to repositories</button></div></div></div>
+</figure>
+  <figure class="mock-specimen" style="margin:0">
+  <figcaption class="gh-mock-label">All done</figcaption>
+  <div class="mock-stage mock-w640"><div class="gh-empty"><svg class="gh-icon " style="color:var(--gh-success)" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><h3 class="gh-screen-title">All conflicts resolved. 2 merges finished.</h3><div class="gh-empty__actions"><button class="gh-btn gh-btn--primary">Back to the run</button><button class="gh-btn">Go to Changes</button></div></div></div>
+</figure>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="t-h">
+  <h2 id="t-h" class="mock-heading">9. Toasts</h2>
+  
+  <div class="mock-specimens">
+  <div class="gh-toast gh-toast--success" role="status"><svg class="gh-icon " style="color:var(--gh-success)" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><div class="gh-toast__text">Api.csproj resolved and staged. Opening DeleteOnboarding.cs (2 of 3).</div><button class="gh-btn gh-btn--icon" aria-label="Dismiss"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
+  <div class="gh-toast" role="status"><svg class="gh-icon " style="color:var(--gh-info)" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><div class="gh-toast__text">Replaced your edit in conflict 3.<div class="mock-mt"><button class="gh-btn gh-btn--sm">Undo</button></div></div><button class="gh-btn gh-btn--icon" aria-label="Dismiss"><svg class="gh-icon " aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
+</div>
+</section>
+<section class="mock-section" aria-labelledby="rb-h">
+  <h2 id="rb-h" class="mock-heading">10. Rebase variant</h2>
+  <p class="mock-desc">During a rebase the sides swap meaning (§11.2): Incoming is your own commit being replayed, Current is <code class="gh-code">dev</code> plus your commits already replayed. The file bar says which commit is being replayed, Incoming carries the "Your commit" tag, and the coach strip has its own rebase copy (shown once for rebases, §11.8).</p>
+  <div class="mock-specimens">
+  <figure class="mock-specimen mock-specimen--full" style="margin:0">
+  <figcaption class="gh-mock-label">File bar, coach strip and pane titles while rebasing</figcaption>
+  <div class="mock-stage mock-nopad">
+  <div class="mock-filebar">
+    <button class="gh-btn gh-btn--sm gh-btn--ghost" title="Back to Conflicts (Alt+←)"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Conflicts</button>
+    <span class="gh-code">app-api / Api/Api.csproj</span>
+    <span class="gh-secondary gh-truncate">Rebasing <code class="gh-code">TK-2636-taosif-Onboarding</code> onto <code class="gh-code">dev</code>: commit 2 of 5</span>
+    <span class="gh-spacer"></span>
+    <span class="gh-caption gh-secondary">File 1 of 1 in this commit · 2 conflicts</span>
+  </div>
+  <div class="mock-coach" role="note"><span class="mock-num-badge">1</span>Top left: your commit, being replayed. <span class="mock-num-badge">2</span>Top right: dev, plus your commits already replayed. <span class="mock-num-badge">3</span>Bottom: the file that will be saved. For each conflict, tick the side to keep, or both.<span class="gh-spacer"></span><button class="gh-btn gh-btn--sm">Got it</button></div>
+  <div class="mock-top">
+    <section class="gh-pane mock-mpane" aria-label="Incoming, your commit a1b2c3d Add delete endpoint">
+  <div class="mock-mtitle gh-merge-pane-title--incoming"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title"><span class="mock-num-badge">1</span> Incoming</span><span class="gh-code mock-real">a1b2c3d Add delete endpoint</span><span class="gh-pill gh-pill--info">Your commit</span></div><div class="gh-caption gh-secondary">Your commit, being replayed</div></div>
+  <div class="mock-mbody mock-auto"><div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--incoming mock-mchk" role="checkbox" aria-checked="true" tabindex="0" aria-label="Take incoming for conflict 1 of 2, lines 14 to 15, your commit a1b2c3d"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div></div><div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--incoming"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.1.0"</span> /&gt;</span></div></div></div></div>
+</section>
+    <div class="gh-splitter" role="separator" aria-orientation="vertical" aria-label="Resize Incoming and Current" aria-valuenow="50" aria-valuemin="30" aria-valuemax="70" tabindex="0"></div>
+    <section class="gh-pane mock-mpane" aria-label="Current, onto dev">
+  <div class="mock-mtitle gh-merge-pane-title--current"><div class="gh-hstack mock-mtitle__row"><span class="gh-section-title"><span class="mock-num-badge">2</span> Current</span><span class="gh-secondary">onto</span><span class="gh-code mock-real">dev</span></div><div class="gh-caption gh-secondary">What you're rebasing onto, plus your commits already replayed</div></div>
+  <div class="mock-mbody mock-auto"><div class="mock-mgutter"><div class="mock-gcell"><span class="mock-gnum">14</span><span class="mock-gbox"><span class="gh-check gh-check--current mock-mchk" role="checkbox" aria-checked="false" tabindex="0" aria-label="Take current for conflict 1 of 2, lines 14 to 15, dev"></span></span></div><div class="mock-gcell"><span class="mock-gnum">15</span><span class="mock-gbox"></span></div></div><div class="gh-editor mock-mcode"><div class="gh-merge-region gh-merge-region--unused"><div class="gh-line"><span class="gh-line__code">    &lt;<span class="tok-tag">PackageReference</span> <span class="tok-attribute">Include</span>=<span class="tok-string">"Serilog"</span></span></div><div class="gh-line"><span class="gh-line__code">        <span class="tok-attribute">Version</span>=<span class="tok-string">"4.0.2"</span> /&gt;</span></div></div></div></div>
+</section>
+  </div>
+  <p class="gh-caption gh-secondary mock-pad">Footer as for a merge; after the last file the user lands on [Continue rebase] on the Conflicts card ("commit 2 of 5"). The glossary entry for Current says "the side you're building on", which is true for merge, rebase and cherry-pick.</p>
+  </div>
+  </figure>
+  </div>
+</section>
+</div>
+<script>
+document.querySelectorAll('[data-theme-choice]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var t = b.getAttribute('data-theme-choice');
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelectorAll('[data-theme-choice]').forEach(function (o) {
+      var on = o === b; o.classList.toggle('is-selected', on); o.setAttribute('aria-pressed', String(on));
+    });
+  });
+});
+</script>
+</body>
+</html>

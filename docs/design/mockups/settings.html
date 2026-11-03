@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings · GitHeddle mockup</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Page helpers shared by this set of mockups. Every colour is a token. */
+.mock-frame { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.gh-mock-bar a { display: inline-flex; align-items: center; gap: var(--gh-space-2); }
+.gh-segmented > button { border-top: 0; border-bottom: 0; border-left: 0; font: inherit; font-size: var(--gh-text-caption-size); cursor: default; }
+.gh-mock-window .gh-scrim { top: 1.75rem; padding-top: var(--gh-space-8); }
+.gh-mock-window .gh-dialog { max-height: calc(100% - 4rem); }
+.tone-warning { color: var(--gh-warning); }
+.tone-danger { color: var(--gh-danger); }
+.tone-success { color: var(--gh-success); }
+.tone-info { color: var(--gh-info); }
+.tone-link { color: var(--gh-text-link); }
+.tone-primary { color: var(--gh-text-primary); }
+.tone-conflict { color: var(--gh-status-conflicted); }
+.nav-list, .plain-list { list-style: none; margin: 0; padding: 0; }
+.disc { background: none; border: 0; padding: 0; font: inherit; color: inherit; display: inline-flex; align-items: center; gap: var(--gh-space-2); cursor: default; }
+details > summary { list-style: none; cursor: default; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .gh-twisty .gh-icon { transform: rotate(90deg); }
+.contents { display: contents; }
+.scroll { flex: 1; min-height: 0; overflow: auto; }
+.gh-jobchip { border: 0; background: transparent; font: inherit; font-size: var(--gh-text-caption-size); }
+.account { border: 0; font-family: inherit; cursor: default; }
+.account--out { background: transparent; border: 1px solid var(--gh-border-strong); }
+.topbar-search { display: inline-flex; align-items: center; gap: var(--gh-space-3); flex: 0 1 12.5rem; min-width: 7.5rem; height: var(--gh-control-md); padding: 0 var(--gh-space-3) 0 var(--gh-space-4); background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-md); color: var(--gh-text-secondary); font: inherit; cursor: text; overflow: hidden; }
+.topbar-search > span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-chip code { color: var(--gh-text-primary); }
+.task-chip__title { max-width: 10rem; color: var(--gh-text-primary); }
+.target-picker.is-flash { background: var(--gh-info-soft); }
+.nav-item-trail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--gh-space-3); }
+.gh-nav-item .nav-item-trail .gh-count { margin-left: 0; }
+.gh-nav-item .gh-truncate { flex: 1; }
+.gh-nav-item code { font-size: var(--gh-text-caption-size); }
+.sidebar-sep { margin: var(--gh-space-3) 0 0; }
+.screen-header-title { display: flex; align-items: baseline; gap: var(--gh-space-4); min-width: 0; }
+.cell { display: flex; align-items: center; gap: var(--gh-space-3); min-width: 0; }
+.cell > .gh-truncate { flex: 1; }
+.cell .gh-row__actions { margin-left: auto; }
+.gh-table td.is-num, .gh-table th.is-num { text-align: right; }
+.table-wrap { flex: 1; min-height: 0; overflow: auto; }
+.section-head { display: flex; align-items: center; gap: var(--gh-space-4); padding: var(--gh-space-5) var(--gh-space-6) var(--gh-space-3); }
+.gs-line { display: flex; align-items: center; gap: var(--gh-space-4); min-height: 2.25rem; margin: var(--gh-space-4) var(--gh-space-6); padding: 0 var(--gh-space-3) 0 var(--gh-space-5); background: var(--gh-surface-raised); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); flex: none; }
+.next-step { display: flex; align-items: center; gap: var(--gh-space-5); padding: var(--gh-space-5); background: var(--gh-info-soft); border-radius: var(--gh-radius-lg); }
+.next-step > .gh-icon { color: var(--gh-info); }
+.next-step p { flex: 1; }
+.dp-section { display: flex; flex-direction: column; gap: var(--gh-space-2); }
+.dp-section > summary { display: flex; align-items: center; gap: var(--gh-space-2); height: var(--gh-row-height); }
+.dp-kv { display: grid; grid-template-columns: 4.5rem 1fr auto; align-items: center; column-gap: var(--gh-space-4); min-height: var(--gh-row-height); }
+.dp-line { display: flex; align-items: center; gap: var(--gh-space-4); min-height: var(--gh-row-height); min-width: 0; }
+.dp-line > .gh-truncate { flex: 1; }
+.merge-card { padding: var(--gh-space-5); background: var(--gh-merge-unresolved); border: 1px solid var(--gh-border-subtle); box-shadow: inset var(--gh-edge-width) 0 0 var(--gh-merge-unresolved-edge); border-radius: var(--gh-radius-lg); display: grid; gap: var(--gh-space-3); }
+.menu-pos { position: absolute; z-index: 20; }
+.sheet-card { display: flex; flex-direction: column; gap: var(--gh-space-4); }
+.sheet-card > h2 { color: var(--gh-text-primary); }
+.choice-tag { font-size: var(--gh-text-caption-size); color: var(--gh-success); font-weight: 600; }
+
+.set-wrap { flex: 1; min-height: 0; display: grid; grid-template-columns: 12.5rem 1fr; }
+.set-tabs { border-right: 1px solid var(--gh-border-subtle); background: var(--gh-surface-raised); padding: var(--gh-space-4) 0; display: flex; flex-direction: column; gap: var(--gh-space-1); overflow: auto; }
+.set-tabs .gh-search { margin: 0 var(--gh-space-4) var(--gh-space-4); }
+.set-tabs .gh-search .gh-input { width: 100%; }
+.set-tab { display: flex; align-items: center; gap: var(--gh-space-4); height: var(--gh-row-height); padding: 0 var(--gh-space-5); border: 0; background: transparent; font: inherit; color: var(--gh-text-primary); text-align: left; cursor: default; }
+.set-tab:hover { background: var(--gh-surface-hover); }
+.set-tab[aria-selected="true"] { background: var(--gh-surface-selected); box-shadow: inset var(--gh-bar-width) 0 0 var(--gh-accent-indicator); font-weight: 600; }
+.set-panel { overflow: auto; padding: var(--gh-space-6) var(--gh-space-7) var(--gh-space-8); }
+.set-form { max-width: 42.5rem; display: flex; flex-direction: column; gap: var(--gh-space-6); }
+.set-field { display: flex; flex-direction: column; gap: var(--gh-space-2); }
+.set-field.is-overridden { padding-left: var(--gh-space-5); box-shadow: inset var(--gh-bar-width) 0 0 var(--gh-accent-indicator); }
+.set-label { display: flex; align-items: center; gap: var(--gh-space-3); font-weight: 600; }
+.saved { display: inline-flex; align-items: center; gap: var(--gh-space-1); font-size: var(--gh-text-caption-size); font-weight: 400; color: var(--gh-success); }
+.saved .gh-icon { color: inherit; }
+.ctl { display: flex; align-items: center; gap: var(--gh-space-4); flex-wrap: wrap; }
+.w-sm { width: 6rem; } .w-md { width: 14rem; } .w-lg { width: 100%; }
+.branch-chip { display: inline-flex; align-items: center; gap: var(--gh-space-2); height: 1.5rem; padding: 0 var(--gh-space-2) 0 var(--gh-space-4); border: 1px solid var(--gh-border-strong); border-radius: var(--gh-radius-full); font-family: var(--gh-font-mono); font-size: var(--gh-text-caption-size); }
+.branch-chip .gh-btn--icon { width: 1.25rem; height: 1.25rem; }
+.radio-row { display: inline-flex; align-items: center; gap: var(--gh-space-3); margin-right: var(--gh-space-5); }
+.example { font-size: var(--gh-text-caption-size); color: var(--gh-text-secondary); }
+.example code { color: var(--gh-text-primary); }
+.repo-split { display: grid; grid-template-columns: 13.75rem 1fr; gap: var(--gh-space-6); align-items: start; }
+.repo-list { border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-md); background: var(--gh-surface-sunken); padding: var(--gh-space-2) 0; }
+.set-h { font-size: var(--gh-text-screen-title-size); }
+.sheet-form { width: 40rem; background: var(--gh-surface-sunken); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); padding: var(--gh-space-6); }
+.kv-table td { white-space: normal; }
+.account-box { display: flex; align-items: center; gap: var(--gh-space-4); padding: var(--gh-space-5); border: 1px solid var(--gh-border-subtle); border-radius: var(--gh-radius-lg); background: var(--gh-surface-raised); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-folder-git-2" viewBox="0 0 24 24"><path d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"/><circle cx="13" cy="12" r="2"/><path d="M18 19c-2.8 0-5-2.2-5-5v8"/><circle cx="20" cy="19" r="2"/></symbol>
+<symbol id="i-file-diff" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></symbol>
+<symbol id="i-git-pull-request" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></symbol>
+<symbol id="i-git-pull-request-draft" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 6V5"/><path d="M18 11v-1"/><line x1="6" x2="6" y1="9" y2="21"/></symbol>
+<symbol id="i-git-compare" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></symbol>
+<symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+<symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-cloud-download" viewBox="0 0 24 24"><path d="M12 13v8l-4-4"/><path d="m12 21 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></symbol>
+<symbol id="i-arrow-down-to-line" viewBox="0 0 24 24"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></symbol>
+<symbol id="i-arrow-up-from-line" viewBox="0 0 24 24"><path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/></symbol>
+<symbol id="i-git-commit-horizontal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="3" x2="9" y1="12" y2="12"/><line x1="15" x2="21" y1="12" y2="12"/></symbol>
+<symbol id="i-git-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+<symbol id="i-git-merge" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+<symbol id="i-refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+<symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></symbol>
+<symbol id="i-square-terminal" viewBox="0 0 24 24"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></symbol>
+<symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+<symbol id="i-file-code" viewBox="0 0 24 24"><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/></symbol>
+<symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-shield-question" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-unlink" viewBox="0 0 24 24"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></symbol>
+<symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></symbol>
+<symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></symbol>
+<symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+<symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+<symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol>
+<symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-columns-3" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-octagon-x" viewBox="0 0 24 24"><path d="m15 9-6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m9 9 6 6"/></symbol>
+<symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+</defs></svg>
+<nav class="gh-mock-bar" aria-label="Mockup controls">
+  <a href="index.html"><svg class="gh-icon gh-icon--inherit" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All mockups</a>
+  <span class="gh-vdivider" aria-hidden="true"></span>
+  <strong>Settings</strong>
+  <span class="gh-secondary gh-truncate">CFG-01/02 · ux-design §16</span>
+  <span class="gh-spacer"></span>
+  <span id="theme-label" class="gh-secondary">Theme</span>
+  <div class="gh-segmented" role="group" aria-labelledby="theme-label">
+    <button type="button" data-set-theme="light" aria-pressed="true" class="is-selected">Light</button>
+    <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+<div class="gh-mock-stage">
+
+<section class="mock-frame" aria-labelledby="f1-cap">
+  <p class="gh-mock-caption" id="f1-cap"><strong>1 · Git and branches (CFG-01).</strong> Vertical tabs with "Search settings" above, a form up to 680 px with labels above fields. Each field has a scope tag (App / Workspace). The branch pattern was just changed, so "Saved" shows next to it for 2 s.</p>
+  <div class="gh-mock-window" id="f1">
+    <div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+
+    <div class="gh-shell">
+      <a class="gh-sr-only" href="#f1-main">Skip to main content</a>
+
+    <header class="gh-topbar" aria-label="Top bar">
+      <div class="contents" role="toolbar" aria-label="Top bar">
+      <span class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></span>
+      <button type="button" class="gh-btn gh-btn--ghost" aria-haspopup="menu" aria-label="Workspace: acme-works. Workspace menu" title="acme-works"><span class="gh-truncate tone-primary">acme-works</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <button type="button" class="gh-btn target-picker" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Target: Task TK-2636, 2 repos" aria-describedby="f1-target-desc"><span class="gh-secondary">Target:</span> Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span id="f1-target-desc" class="gh-sr-only">Fetch, Pull, Push and pipelines act on these repos</span>
+
+      <button type="button" class="gh-btn gh-btn--ghost task-chip" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions" title="TK-2636 Onboarding · TK-2636-taosif-Onboarding"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate task-chip__title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-topbar__spacer"></span>
+      <button type="button" class="gh-btn gh-btn--primary" aria-keyshortcuts="Control+N" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+      <button type="button" class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview.">Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" aria-keyshortcuts="Control+Shift+F" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" aria-keyshortcuts="Control+Shift+D" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Push 2 repos" aria-keyshortcuts="Control+Shift+H" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+      <button type="button" class="topbar-search" aria-label="Search or run a command (Ctrl+K)" aria-keyshortcuts="Control+K"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span>Search or run a command…</span><kbd>Ctrl K</kbd></button>
+      <button type="button" class="gh-initials account" aria-haspopup="menu" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net">TA</button>
+      </div>
+    </header>
+      <div class="gh-shell__body">
+
+    <nav class="gh-sidebar" aria-label="Main">
+      <ul class="nav-list">
+
+        <li><a class="gh-nav-item" href="dashboard.html" aria-label="Repositories, 6 repos, 1 needs review" title="6 repos · 1 needs review"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="nav-item-trail"><span class="gh-count">6</span><svg class="gh-icon tone-warning" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span></a></li>
+
+        <li><a class="gh-nav-item" href="changes.html" aria-label="Changes, 8 files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="nav-item-trail"><span class="gh-count">8</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pull-requests.html" aria-label="Pull requests, 1 open"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="merge-editor.html" aria-label="Conflicts, 1 repo needs you" title="1 repo, 3 conflicted files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pipelines.html" aria-label="Pipelines"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span></a></li>
+      </ul>
+      <hr class="sidebar-sep">
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Tasks</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate">Onboarding</span><span class="gh-caption gh-secondary">Active</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2601 Cost centres"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg><code>TK-2601</code><span class="gh-truncate">Cost centres</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Show all 6 tasks"><span class="gh-link">Show all (6)</span></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Pipelines</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, merge into dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, merge into dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, pull request to dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, pull request to dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Groups</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group backend, 4 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">backend</span><span class="gh-count">4</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group frontend, 1 repo"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">frontend</span><span class="gh-count">1</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group docs, 2 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">docs</span><span class="gh-count">2</span></a></li>
+      </ul>
+      <ul class="nav-list gh-sidebar__bottom">
+
+        <li><a class="gh-nav-item" href="#" aria-label="Activity log"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a></li>
+
+        <li><a class="gh-nav-item is-selected" href="settings.html" aria-current="page" aria-label="Settings"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a></li>
+      </ul>
+    </nav>
+        <div class="gh-main" role="main" id="f1-main">
+          <div class="gh-screen-header"><h1 class="gh-screen-title">Settings</h1><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Every change saves itself.</span></div>
+          <div class="set-wrap">
+            <div class="set-tabs">
+              <label class="gh-search"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input" type="search" placeholder="Search settings" aria-label="Search settings"></label>
+              <div role="tablist" aria-orientation="vertical" aria-label="Settings sections" class="gh-stack" style="gap:var(--gh-space-1)">
+              <button type="button" class="set-tab" role="tab" id="f1-tab-General" aria-selected="false" tabindex="-1" aria-controls="f1-panel">General</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Gitandbranches" aria-selected="true" tabindex="0" aria-controls="f1-panel">Git and branches</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Pullrequests" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Pull requests</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Conflictsandtools" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Conflicts and tools</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Accounts" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Accounts</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Workspace" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Workspace</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Repositories" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Repositories</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-Keyboardshortcuts" aria-selected="false" tabindex="-1" aria-controls="f1-panel">Keyboard shortcuts</button>
+              <button type="button" class="set-tab" role="tab" id="f1-tab-About" aria-selected="false" tabindex="-1" aria-controls="f1-panel">About</button>
+              </div>
+            </div>
+            <div class="set-panel" role="tabpanel" id="f1-panel" aria-labelledby="f1-tab-Gitandbranches">
+              <div class="set-form">
+                <h2 class="set-h tone-primary">Git and branches</h2>
+
+              <div class="set-field">
+                <div class="set-label"><label for="g-short">Your short name</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><input id="g-short" class="gh-input gh-input--code w-md" value="taosif" aria-describedby="g-short-hint"></div>
+                <p class="gh-field__hint" id="g-short-hint">Used in branch names</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-pattern">Branch name pattern</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span><span class="saved" role="status"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Saved</span></div>
+                <div class="ctl"><input id="g-pattern" class="gh-input gh-input--code w-lg" value="{ticket}-{user}-{title}" aria-describedby="g-pattern-hint"></div>
+                <p class="gh-field__hint" id="g-pattern-hint">Example: <code class="tone-primary">TK-2636-taosif-Onboarding</code> · Variables: <span class="gh-varchip">{ticket}</span> <span class="gh-varchip">{user}</span> <span class="gh-varchip">{title}</span></p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-base">Default base branch</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><button type="button" id="g-base" class="gh-select w-md" role="combobox" aria-expanded="false"><code>dev</code><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+                <p class="gh-field__hint" id="g-base-hint">Each repo can override this under Repositories.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-prot">Protected branches</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><span class="branch-chip">main<button type="button" class="gh-btn gh-btn--icon" aria-label="Remove main"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></span><span class="branch-chip">master<button type="button" class="gh-btn gh-btn--icon" aria-label="Remove master"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></span><span class="branch-chip">dev<button type="button" class="gh-btn gh-btn--icon" aria-label="Remove dev"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></span><button type="button" id="g-prot" class="gh-btn gh-btn--sm"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Add</button></div>
+                <p class="gh-field__hint" id="g-prot-hint">GitHeddle asks before committing, merging or pushing to these.</p>
+              </div>
+              <div class="set-field" role="radiogroup" aria-labelledby="g-sync-l">
+                <div class="set-label"><span id="g-sync-l">Sync method</span><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><span class="radio-row"><span class="gh-radio is-checked" role="radio" aria-checked="true" tabindex="0" aria-label="Merge (recommended)"></span>Merge (recommended)</span><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="Rebase"></span>Rebase</span></div>
+                <p class="gh-field__hint">Used by Sync with dev and Update from main.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-stage">Require staging before commit</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><span class="gh-switch" id="g-stage" role="switch" tabindex="0" aria-checked="false"></span><span class="gh-secondary">Off</span></div>
+                <p class="gh-field__hint" id="g-stage-hint">Off: when nothing is staged, Commit commits all changed files, and the button says how many.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-par">Parallel limit</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><input id="g-par" class="gh-input w-sm" type="number" min="1" max="16" value="4" aria-describedby="g-par-hint"></div>
+                <p class="gh-field__hint" id="g-par-hint">1–16 repos at the same time. Default 4.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="g-bg">Background fetch</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><div class="gh-segmented" role="radiogroup" aria-label="Background fetch"><button type="button" role="radio" aria-checked="true" class="is-selected">Off</button><button type="button" role="radio" aria-checked="false">5 min</button><button type="button" role="radio" aria-checked="false">15 min</button><button type="button" role="radio" aria-checked="false">30 min</button><button type="button" role="radio" aria-checked="false">60 min</button></div></div>
+                <p class="gh-field__hint" id="g-bg-hint">Default Off. The bottom bar reminds you after 60 min without a fetch.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label">Git</div>
+                <div class="ctl"><code>C:\Program Files\Git\cmd\git.exe</code><span class="gh-secondary">· version 2.47.1</span><button type="button" class="gh-btn gh-btn--sm">Check again</button></div>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    <footer class="gh-bottombar" aria-label="Status bar">
+      <div class="gh-hstack" role="group" aria-label="Jobs"><span>Nothing running</span></div>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span class="gh-bottombar__spacer"></span>
+
+      <a href="#" class="gh-link">Activity log</a>
+    </footer>
+    </div>
+  </div>
+</section>
+<section class="mock-frame" aria-labelledby="f2-cap">
+  <p class="gh-mock-caption" id="f2-cap"><strong>2 · Repositories (CFG-02).</strong> Repo list and an override form. Inherited values show as placeholders; app-report-api overrides its base branch to main, so that field gets the accent bar and [Reset to default].</p>
+  <div class="gh-mock-window" id="f2">
+    <div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+
+    <div class="gh-shell">
+      <a class="gh-sr-only" href="#f2-main">Skip to main content</a>
+
+    <header class="gh-topbar" aria-label="Top bar">
+      <div class="contents" role="toolbar" aria-label="Top bar">
+      <span class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></span>
+      <button type="button" class="gh-btn gh-btn--ghost" aria-haspopup="menu" aria-label="Workspace: acme-works. Workspace menu" title="acme-works"><span class="gh-truncate tone-primary">acme-works</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <button type="button" class="gh-btn target-picker" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Target: Task TK-2636, 2 repos" aria-describedby="f2-target-desc"><span class="gh-secondary">Target:</span> Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span id="f2-target-desc" class="gh-sr-only">Fetch, Pull, Push and pipelines act on these repos</span>
+
+      <button type="button" class="gh-btn gh-btn--ghost task-chip" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions" title="TK-2636 Onboarding · TK-2636-taosif-Onboarding"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate task-chip__title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-topbar__spacer"></span>
+      <button type="button" class="gh-btn gh-btn--primary" aria-keyshortcuts="Control+N" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+      <button type="button" class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview.">Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" aria-keyshortcuts="Control+Shift+F" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" aria-keyshortcuts="Control+Shift+D" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Push 2 repos" aria-keyshortcuts="Control+Shift+H" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+      <button type="button" class="topbar-search" aria-label="Search or run a command (Ctrl+K)" aria-keyshortcuts="Control+K"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span>Search or run a command…</span><kbd>Ctrl K</kbd></button>
+      <button type="button" class="gh-initials account" aria-haspopup="menu" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net">TA</button>
+      </div>
+    </header>
+      <div class="gh-shell__body">
+
+    <nav class="gh-sidebar" aria-label="Main">
+      <ul class="nav-list">
+
+        <li><a class="gh-nav-item" href="dashboard.html" aria-label="Repositories, 6 repos, 1 needs review" title="6 repos · 1 needs review"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="nav-item-trail"><span class="gh-count">6</span><svg class="gh-icon tone-warning" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span></a></li>
+
+        <li><a class="gh-nav-item" href="changes.html" aria-label="Changes, 8 files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="nav-item-trail"><span class="gh-count">8</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pull-requests.html" aria-label="Pull requests, 1 open"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="merge-editor.html" aria-label="Conflicts, 1 repo needs you" title="1 repo, 3 conflicted files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pipelines.html" aria-label="Pipelines"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span></a></li>
+      </ul>
+      <hr class="sidebar-sep">
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Tasks</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate">Onboarding</span><span class="gh-caption gh-secondary">Active</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2601 Cost centres"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg><code>TK-2601</code><span class="gh-truncate">Cost centres</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Show all 6 tasks"><span class="gh-link">Show all (6)</span></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Pipelines</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, merge into dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, merge into dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, pull request to dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, pull request to dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Groups</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group backend, 4 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">backend</span><span class="gh-count">4</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group frontend, 1 repo"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">frontend</span><span class="gh-count">1</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group docs, 2 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">docs</span><span class="gh-count">2</span></a></li>
+      </ul>
+      <ul class="nav-list gh-sidebar__bottom">
+
+        <li><a class="gh-nav-item" href="#" aria-label="Activity log"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a></li>
+
+        <li><a class="gh-nav-item is-selected" href="settings.html" aria-current="page" aria-label="Settings"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a></li>
+      </ul>
+    </nav>
+        <div class="gh-main" role="main" id="f2-main">
+          <div class="gh-screen-header"><h1 class="gh-screen-title">Settings</h1><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Every change saves itself.</span></div>
+          <div class="set-wrap">
+            <div class="set-tabs">
+              <label class="gh-search"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input" type="search" placeholder="Search settings" aria-label="Search settings"></label>
+              <div role="tablist" aria-orientation="vertical" aria-label="Settings sections" class="gh-stack" style="gap:var(--gh-space-1)">
+              <button type="button" class="set-tab" role="tab" id="f2-tab-General" aria-selected="false" tabindex="-1" aria-controls="f2-panel">General</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Gitandbranches" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Git and branches</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Pullrequests" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Pull requests</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Conflictsandtools" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Conflicts and tools</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Accounts" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Accounts</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Workspace" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Workspace</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Repositories" aria-selected="true" tabindex="0" aria-controls="f2-panel">Repositories</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-Keyboardshortcuts" aria-selected="false" tabindex="-1" aria-controls="f2-panel">Keyboard shortcuts</button>
+              <button type="button" class="set-tab" role="tab" id="f2-tab-About" aria-selected="false" tabindex="-1" aria-controls="f2-panel">About</button>
+              </div>
+            </div>
+            <div class="set-panel" role="tabpanel" id="f2-panel" aria-labelledby="f2-tab-Repositories">
+              <div class="set-form">
+                <h2 class="set-h tone-primary">Repositories</h2>
+
+                <div class="repo-split">
+                  <div class="repo-list" role="listbox" aria-label="Repos">
+                    <div class="gh-row" role="option" aria-selected="false"><span class="gh-grow">app-api</span></div><div class="gh-row" role="option" aria-selected="false"><span class="gh-grow">app-front</span></div><div class="gh-row is-selected" role="option" aria-selected="true"><span class="gh-grow">app-report-api</span><span class="gh-caption gh-secondary">1 override</span></div><div class="gh-row" role="option" aria-selected="false"><span class="gh-grow">app-scheduler-api</span></div><div class="gh-row" role="option" aria-selected="false"><span class="gh-grow">app-signalr-api</span></div><div class="gh-row" role="option" aria-selected="false"><span class="gh-grow">knowledge-hub</span></div>
+                  </div>
+                  <div class="gh-stack" style="gap:var(--gh-space-6)">
+                    <p><span class="gh-strong">app-report-api</span> <span class="gh-secondary">· C:\Work\acme\app-report-api</span></p>
+
+                  <div class="set-field is-overridden">
+                    <div class="set-label"><label for="r-base">Base branch</label><span class="gh-spacer"></span><span class="gh-checkrow gh-caption"><span class="gh-check" role="checkbox" tabindex="-1" aria-checked="true" aria-label="Override Base branch"></span>Override</span></div>
+                    <div class="ctl"><button type="button" id="r-base" class="gh-select w-md" role="combobox" aria-expanded="false"><code>main</code><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button><span class="saved" role="status"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Saved</span><button type="button" class="gh-btn gh-btn--sm">Reset to default</button></div>
+                  </div>
+
+                  <div class="set-field">
+                    <div class="set-label"><label for="r-prot">Protected branches</label><span class="gh-spacer"></span><span class="gh-checkrow gh-caption"><span class="gh-check" role="checkbox" tabindex="-1" aria-checked="false" aria-label="Override Protected branches"></span>Override</span></div>
+                    <div class="ctl"><input id="r-prot" class="gh-input w-lg" placeholder="main, master, dev, from Git and branches" readonly aria-readonly="true"></div>
+                  </div>
+
+                  <div class="set-field">
+                    <div class="set-label"><label for="r-sync">Sync method</label><span class="gh-spacer"></span><span class="gh-checkrow gh-caption"><span class="gh-check" role="checkbox" tabindex="-1" aria-checked="false" aria-label="Override Sync method"></span>Override</span></div>
+                    <div class="ctl"><input id="r-sync" class="gh-input w-lg" placeholder="Merge, from Git and branches" readonly aria-readonly="true"></div>
+                  </div>
+                    <div class="set-field"><div class="set-label gh-disabled">Default merge method <span class="gh-badge">v0.2</span></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    <footer class="gh-bottombar" aria-label="Status bar">
+      <div class="gh-hstack" role="group" aria-label="Jobs"><span>Nothing running</span></div>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span class="gh-bottombar__spacer"></span>
+
+      <a href="#" class="gh-link">Activity log</a>
+    </footer>
+    </div>
+  </div>
+</section>
+<section class="mock-frame" aria-labelledby="f3-cap">
+  <p class="gh-mock-caption" id="f3-cap"><strong>3 · General.</strong></p>
+  <div class="gh-mock-window" id="f3">
+    <div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+
+    <div class="gh-shell">
+      <a class="gh-sr-only" href="#f3-main">Skip to main content</a>
+
+    <header class="gh-topbar" aria-label="Top bar">
+      <div class="contents" role="toolbar" aria-label="Top bar">
+      <span class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></span>
+      <button type="button" class="gh-btn gh-btn--ghost" aria-haspopup="menu" aria-label="Workspace: acme-works. Workspace menu" title="acme-works"><span class="gh-truncate tone-primary">acme-works</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <button type="button" class="gh-btn target-picker" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Target: Task TK-2636, 2 repos" aria-describedby="f3-target-desc"><span class="gh-secondary">Target:</span> Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span id="f3-target-desc" class="gh-sr-only">Fetch, Pull, Push and pipelines act on these repos</span>
+
+      <button type="button" class="gh-btn gh-btn--ghost task-chip" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions" title="TK-2636 Onboarding · TK-2636-taosif-Onboarding"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate task-chip__title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-topbar__spacer"></span>
+      <button type="button" class="gh-btn gh-btn--primary" aria-keyshortcuts="Control+N" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+      <button type="button" class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview.">Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" aria-keyshortcuts="Control+Shift+F" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" aria-keyshortcuts="Control+Shift+D" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Push 2 repos" aria-keyshortcuts="Control+Shift+H" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+      <button type="button" class="topbar-search" aria-label="Search or run a command (Ctrl+K)" aria-keyshortcuts="Control+K"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span>Search or run a command…</span><kbd>Ctrl K</kbd></button>
+      <button type="button" class="gh-initials account" aria-haspopup="menu" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net">TA</button>
+      </div>
+    </header>
+      <div class="gh-shell__body">
+
+    <nav class="gh-sidebar" aria-label="Main">
+      <ul class="nav-list">
+
+        <li><a class="gh-nav-item" href="dashboard.html" aria-label="Repositories, 6 repos, 1 needs review" title="6 repos · 1 needs review"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="nav-item-trail"><span class="gh-count">6</span><svg class="gh-icon tone-warning" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span></a></li>
+
+        <li><a class="gh-nav-item" href="changes.html" aria-label="Changes, 8 files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="nav-item-trail"><span class="gh-count">8</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pull-requests.html" aria-label="Pull requests, 1 open"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="merge-editor.html" aria-label="Conflicts, 1 repo needs you" title="1 repo, 3 conflicted files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pipelines.html" aria-label="Pipelines"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span></a></li>
+      </ul>
+      <hr class="sidebar-sep">
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Tasks</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate">Onboarding</span><span class="gh-caption gh-secondary">Active</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2601 Cost centres"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg><code>TK-2601</code><span class="gh-truncate">Cost centres</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Show all 6 tasks"><span class="gh-link">Show all (6)</span></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Pipelines</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, merge into dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, merge into dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, pull request to dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, pull request to dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Groups</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group backend, 4 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">backend</span><span class="gh-count">4</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group frontend, 1 repo"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">frontend</span><span class="gh-count">1</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group docs, 2 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">docs</span><span class="gh-count">2</span></a></li>
+      </ul>
+      <ul class="nav-list gh-sidebar__bottom">
+
+        <li><a class="gh-nav-item" href="#" aria-label="Activity log"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a></li>
+
+        <li><a class="gh-nav-item is-selected" href="settings.html" aria-current="page" aria-label="Settings"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a></li>
+      </ul>
+    </nav>
+        <div class="gh-main" role="main" id="f3-main">
+          <div class="gh-screen-header"><h1 class="gh-screen-title">Settings</h1><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Every change saves itself.</span></div>
+          <div class="set-wrap">
+            <div class="set-tabs">
+              <label class="gh-search"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input" type="search" placeholder="Search settings" aria-label="Search settings"></label>
+              <div role="tablist" aria-orientation="vertical" aria-label="Settings sections" class="gh-stack" style="gap:var(--gh-space-1)">
+              <button type="button" class="set-tab" role="tab" id="f3-tab-General" aria-selected="true" tabindex="0" aria-controls="f3-panel">General</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Gitandbranches" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Git and branches</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Pullrequests" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Pull requests</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Conflictsandtools" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Conflicts and tools</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Accounts" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Accounts</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Workspace" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Workspace</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Repositories" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Repositories</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-Keyboardshortcuts" aria-selected="false" tabindex="-1" aria-controls="f3-panel">Keyboard shortcuts</button>
+              <button type="button" class="set-tab" role="tab" id="f3-tab-About" aria-selected="false" tabindex="-1" aria-controls="f3-panel">About</button>
+              </div>
+            </div>
+            <div class="set-panel" role="tabpanel" id="f3-panel" aria-labelledby="f3-tab-General">
+              <div class="set-form">
+                <h2 class="set-h tone-primary">General</h2>
+
+              <div class="set-field" role="radiogroup" aria-labelledby="ge-theme-l">
+                <div class="set-label"><span id="ge-theme-l">Theme</span><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span><span class="saved" role="status"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Saved</span></div>
+                <div class="ctl"><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="System"></span>System</span><span class="radio-row"><span class="gh-radio is-checked" role="radio" aria-checked="true" tabindex="0" aria-label="Light"></span>Light</span><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="Dark"></span>Dark</span></div>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="ge-zoom">Zoom</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><button type="button" id="ge-zoom" class="gh-select w-sm" role="combobox" aria-expanded="false"><span>100 %</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button><button type="button" class="gh-btn gh-btn--sm" aria-disabled="true">Reset</button></div>
+                <p class="gh-field__hint" id="ge-zoom-hint">90 % to 300 %. Ctrl+= and Ctrl+− also zoom; Ctrl+0 resets.</p>
+              </div>
+              <div class="set-field" role="radiogroup" aria-labelledby="ge-motion-l">
+                <div class="set-label"><span id="ge-motion-l">Motion</span><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><span class="radio-row"><span class="gh-radio is-checked" role="radio" aria-checked="true" tabindex="0" aria-label="System"></span>System</span><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="Reduce"></span>Reduce</span><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="Full"></span>Full</span></div>
+                <p class="gh-field__hint">Reduce turns off every animation and shows "Working…" instead of moving bars.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="ge-editor">Editor</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><button type="button" id="ge-editor" class="gh-select w-md" role="combobox" aria-expanded="false"><span>VS Code</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+                <p class="gh-field__hint" id="ge-editor-hint">Found at <code>C:\Users\taosif\AppData\Local\Programs\Microsoft VS Code\Code.exe</code>. Choose Other… to pick another program.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="ge-term">Terminal</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><button type="button" id="ge-term" class="gh-select w-md" role="combobox" aria-expanded="false"><span>System terminal</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button></div>
+
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="ge-layout">Remember window layout</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><span class="gh-switch" id="ge-layout" role="switch" tabindex="0" aria-checked="true"></span><span class="gh-secondary">On</span></div>
+
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    <footer class="gh-bottombar" aria-label="Status bar">
+      <div class="gh-hstack" role="group" aria-label="Jobs"><span>Nothing running</span></div>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span class="gh-bottombar__spacer"></span>
+
+      <a href="#" class="gh-link">Activity log</a>
+    </footer>
+    </div>
+  </div>
+</section>
+<section class="mock-frame" aria-labelledby="f4-cap">
+  <p class="gh-mock-caption" id="f4-cap"><strong>4 · Accounts</strong>, signed in, plus the signed-out row and the Linux keyring notice (SEC-02).</p>
+  <div class="gh-mock-window" id="f4">
+    <div class="gh-mock-osbar" aria-hidden="true">GitHeddle — acme-works</div>
+
+    <div class="gh-shell">
+      <a class="gh-sr-only" href="#f4-main">Skip to main content</a>
+
+    <header class="gh-topbar" aria-label="Top bar">
+      <div class="contents" role="toolbar" aria-label="Top bar">
+      <span class="gh-wordmark"><svg class="gh-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><span>GitHeddle</span></span>
+      <button type="button" class="gh-btn gh-btn--ghost" aria-haspopup="menu" aria-label="Workspace: acme-works. Workspace menu" title="acme-works"><span class="gh-truncate tone-primary">acme-works</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <button type="button" class="gh-btn target-picker" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Target: Task TK-2636, 2 repos" aria-describedby="f4-target-desc"><span class="gh-secondary">Target:</span> Task TK-2636 · 2 <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span id="f4-target-desc" class="gh-sr-only">Fetch, Pull, Push and pipelines act on these repos</span>
+
+      <button type="button" class="gh-btn gh-btn--ghost task-chip" aria-haspopup="menu" aria-label="Active task: TK-2636 Onboarding, 2 repos. Task actions" title="TK-2636 Onboarding · TK-2636-taosif-Onboarding"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate task-chip__title">Onboarding</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-topbar__spacer"></span>
+      <button type="button" class="gh-btn gh-btn--primary" aria-keyshortcuts="Control+N" title="Creates the task branch from the latest base in each repo you pick, after a preview.">Start task</button>
+      <button type="button" class="gh-btn" aria-haspopup="menu" title="Runs a saved list of Git steps on the target repos, after a preview.">Run pipeline <svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></button>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Fetch 2 repos" aria-keyshortcuts="Control+Shift+F" title="Fetches 2 repos (Task TK-2636). Downloads new commits from origin without changing any of your branches."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-cloud-download"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Pull 2 repos" aria-keyshortcuts="Control+Shift+D" title="Pulls 2 repos (Task TK-2636). Brings new commits from origin. Stops if it can't fast-forward."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-down-to-line"/></svg></button>
+      <button type="button" class="gh-btn gh-btn--icon" aria-label="Push 2 repos" aria-keyshortcuts="Control+Shift+H" title="Pushes 2 repos (Task TK-2636). Sends your new commits to origin. Never force-pushes."><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up-from-line"/></svg></button>
+      <button type="button" class="topbar-search" aria-label="Search or run a command (Ctrl+K)" aria-keyshortcuts="Control+K"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span>Search or run a command…</span><kbd>Ctrl K</kbd></button>
+      <button type="button" class="gh-initials account" aria-haspopup="menu" aria-label="Signed in to GitHub as dev-taosif-net. Account menu" title="Signed in as dev-taosif-net">TA</button>
+      </div>
+    </header>
+      <div class="gh-shell__body">
+
+    <nav class="gh-sidebar" aria-label="Main">
+      <ul class="nav-list">
+
+        <li><a class="gh-nav-item" href="dashboard.html" aria-label="Repositories, 6 repos, 1 needs review" title="6 repos · 1 needs review"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder-git-2"/></svg><span>Repositories</span><span class="nav-item-trail"><span class="gh-count">6</span><svg class="gh-icon tone-warning" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span></a></li>
+
+        <li><a class="gh-nav-item" href="changes.html" aria-label="Changes, 8 files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-file-diff"/></svg><span>Changes</span><span class="nav-item-trail"><span class="gh-count">8</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pull-requests.html" aria-label="Pull requests, 1 open"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-pull-request"/></svg><span>Pull requests</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="merge-editor.html" aria-label="Conflicts, 1 repo needs you" title="1 repo, 3 conflicted files"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-git-compare"/></svg><span>Conflicts</span><span class="nav-item-trail"><span class="gh-count">1</span></span></a></li>
+
+        <li><a class="gh-nav-item" href="pipelines.html" aria-label="Pipelines"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-workflow"/></svg><span>Pipelines</span></a></li>
+      </ul>
+      <hr class="sidebar-sep">
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Tasks</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="Start task" title="Start task"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2636 Onboarding, active task"><span class="gh-dot gh-dot--accent" aria-hidden="true"></span><code>TK-2636</code><span class="gh-truncate">Onboarding</span><span class="gh-caption gh-secondary">Active</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="task.html" aria-label="TK-2601 Cost centres"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-ticket"/></svg><code>TK-2601</code><span class="gh-truncate">Cost centres</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Show all 6 tasks"><span class="gh-link">Show all (6)</span></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Pipelines</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New pipeline" title="New pipeline"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, merge into dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, merge into dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="pipelines.html" aria-label="Update from main, pull request to dev. Ready-made pipeline" title="Ready-made. Duplicate it to change it"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="gh-truncate">Update from main, pull request to dev</span><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></a></li>
+      </ul>
+
+      <div class="gh-sidebar__group">
+        <h2 class="gh-section-title"><button type="button" class="disc" aria-expanded="true"><span class="gh-twisty is-open"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>Groups</button></h2>
+        <button type="button" class="gh-btn gh-btn--icon" aria-label="New group" title="New group"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="nav-list">
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group backend, 4 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">backend</span><span class="gh-count">4</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group frontend, 1 repo"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">frontend</span><span class="gh-count">1</span></a></li>
+        <li><a class="gh-nav-item gh-nav-item--sub" href="#" aria-label="Group docs, 2 repos"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg><span class="gh-truncate">docs</span><span class="gh-count">2</span></a></li>
+      </ul>
+      <ul class="nav-list gh-sidebar__bottom">
+
+        <li><a class="gh-nav-item" href="#" aria-label="Activity log"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-scroll-text"/></svg><span>Activity log</span></a></li>
+
+        <li><a class="gh-nav-item is-selected" href="settings.html" aria-current="page" aria-label="Settings"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span>Settings</span></a></li>
+      </ul>
+    </nav>
+        <div class="gh-main" role="main" id="f4-main">
+          <div class="gh-screen-header"><h1 class="gh-screen-title">Settings</h1><span class="gh-spacer"></span><span class="gh-caption gh-secondary">Every change saves itself.</span></div>
+          <div class="set-wrap">
+            <div class="set-tabs">
+              <label class="gh-search"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><input class="gh-input" type="search" placeholder="Search settings" aria-label="Search settings"></label>
+              <div role="tablist" aria-orientation="vertical" aria-label="Settings sections" class="gh-stack" style="gap:var(--gh-space-1)">
+              <button type="button" class="set-tab" role="tab" id="f4-tab-General" aria-selected="false" tabindex="-1" aria-controls="f4-panel">General</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Gitandbranches" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Git and branches</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Pullrequests" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Pull requests</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Conflictsandtools" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Conflicts and tools</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Accounts" aria-selected="true" tabindex="0" aria-controls="f4-panel">Accounts</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Workspace" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Workspace</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Repositories" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Repositories</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-Keyboardshortcuts" aria-selected="false" tabindex="-1" aria-controls="f4-panel">Keyboard shortcuts</button>
+              <button type="button" class="set-tab" role="tab" id="f4-tab-About" aria-selected="false" tabindex="-1" aria-controls="f4-panel">About</button>
+              </div>
+            </div>
+            <div class="set-panel" role="tabpanel" id="f4-panel" aria-labelledby="f4-tab-Accounts">
+              <div class="set-form">
+                <h2 class="set-h tone-primary">Accounts</h2>
+
+              <div class="set-field">
+                <div class="set-label">GitHub <span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="account-box"><span class="gh-initials" aria-hidden="true">TA</span><span class="gh-spacer">Signed in as <span class="gh-strong">dev-taosif-net</span></span><button type="button" class="gh-btn">Sign out</button></div>
+                <p class="gh-field__hint">The sign-in is kept in Windows Credential Manager.</p>
+              </div>
+              <h3 class="gh-section-title">When signed out</h3>
+              <div class="account-box"><span class="gh-initials account--out" aria-hidden="true"><svg class="gh-icon gh-icon--sm" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></span><span class="gh-spacer gh-secondary">Not signed in to GitHub</span><button type="button" class="gh-btn gh-btn--primary">Sign in with GitHub</button><button type="button" class="gh-btn">Use a personal access token…</button></div>
+              <h3 class="gh-section-title">Linux without a password store</h3>
+              <div class="gh-banner gh-banner--warning" style="border:0;border-radius:var(--gh-radius-md)"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-key-round"/></svg><p class="gh-banner__text">Signed in for this session only. Your desktop has no password store, so you'll sign in again next time. Installing GNOME Keyring or KWallet fixes this.</p><button type="button" class="gh-btn gh-btn--sm">How to set up a keyring</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    <footer class="gh-bottombar" aria-label="Status bar">
+      <div class="gh-hstack" role="group" aria-label="Jobs"><span>Nothing running</span></div>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span title="Oldest: knowledge-hub, 3 days ago">Fetched 2 min ago</span>
+      <span class="gh-vdivider" aria-hidden="true"></span>
+      <span class="gh-bottombar__spacer"></span>
+
+      <a href="#" class="gh-link">Activity log</a>
+    </footer>
+    </div>
+  </div>
+</section>
+<section class="mock-frame" aria-labelledby="s1-cap">
+  <p class="gh-mock-caption" id="s1-cap"><strong>5 · The other tabs</strong>, shown as panels without the shell.</p>
+  <div class="gh-mock-sheet"><div class="sheet-card"><h2 class="gh-section-title">Pull requests</h2><div class="sheet-form set-form">
+              <div class="set-field">
+                <div class="set-label"><label for="p-title">Title template</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><input id="p-title" class="gh-input gh-input--code w-lg" value="{ticket}: {title}"></div>
+                <p class="gh-field__hint" id="p-title-hint">Example: TK-2636: Onboarding</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="p-body">Body template</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><textarea id="p-body" class="gh-textarea gh-code" rows="4">## What
+{title}
+
+## Ticket
+{ticket}</textarea><button type="button" class="gh-btn gh-btn--sm">Preview</button></div>
+                <p class="gh-field__hint" id="p-body-hint">Saved when you leave the field. Markdown.</p>
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="p-draft">Create as draft by default</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><span class="gh-switch" id="p-draft" role="switch" tabindex="0" aria-checked="false"></span><span class="gh-secondary">Off</span></div>
+
+              </div>
+              <div class="set-field"><div class="set-label">Default reviewers per group <span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <table class="gh-table kv-table" aria-label="Default reviewers per group"><thead><tr><th scope="col" style="width:8rem">Group</th><th scope="col">GitHub logins</th></tr></thead>
+                <tbody><tr><td>backend</td><td>alice, bob</td></tr><tr><td>frontend</td><td>bob</td></tr><tr><td>docs</td><td class="gh-secondary">None</td></tr></tbody></table></div></div></div><div class="sheet-card"><h2 class="gh-section-title">Conflicts and tools</h2><div class="sheet-form set-form">
+              <div class="set-field" role="radiogroup" aria-labelledby="c-l"><div class="set-label"><span id="c-l">Resolve conflicts with</span><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><span class="radio-row"><span class="gh-radio is-checked" role="radio" aria-checked="true" tabindex="0" aria-label="Built-in merge editor"></span>Built-in merge editor</span><span class="radio-row"><span class="gh-radio" role="radio" aria-checked="false" tabindex="-1" aria-label="External tool…"></span>External tool…</span></div></div>
+
+              <div class="set-field">
+                <div class="set-label"><label for="c-cmd">External merge tool command</label><span class="gh-badge gh-badge--scope" title="Applies to the whole app on this computer.">App</span></div>
+                <div class="ctl"><input id="c-cmd" class="gh-input gh-input--code w-lg" placeholder="code --wait --merge $REMOTE $LOCAL $BASE $MERGED"></div>
+                <p class="gh-field__hint" id="c-cmd-hint">Kept on this computer only. A team file can never set it.</p>
+              </div></div></div><div class="sheet-card"><h2 class="gh-section-title">Workspace</h2><div class="sheet-form set-form">
+              <div class="set-field">
+                <div class="set-label"><label for="w-name">Name</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><input id="w-name" class="gh-input w-md" value="acme-works"></div>
+
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="w-folders">Folders</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><code>C:\Work\acme</code><button type="button" class="gh-btn gh-btn--sm">Remove</button><button type="button" class="gh-btn gh-btn--sm"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Add folder…</button></div>
+
+              </div>
+              <div class="set-field">
+                <div class="set-label"><label for="w-depth">Search depth</label><span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <div class="ctl"><input id="w-depth" class="gh-input w-sm" type="number" min="1" max="5" value="2"></div>
+                <p class="gh-field__hint" id="w-depth-hint">1–5 folders deep. Default 2.</p>
+              </div>
+              <div class="set-field"><div class="set-label">Groups <span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span><span class="gh-spacer"></span><button type="button" class="gh-btn gh-btn--sm"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>New group</button></div>
+                <table class="gh-table" aria-label="Groups"><tbody>
+                  <tr><td>backend</td><td class="gh-secondary">app-api, app-report-api, app-scheduler-api, app-signalr-api</td><td style="width:7rem"><button type="button" class="gh-btn gh-btn--icon" aria-label="Rename backend" title="Rename"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button type="button" class="gh-btn gh-btn--icon" aria-label="Delete backend" title="Delete"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-trash-2"/></svg></button></td></tr>
+                  <tr><td>frontend</td><td class="gh-secondary">app-front</td><td><button type="button" class="gh-btn gh-btn--icon" aria-label="Rename frontend" title="Rename"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button type="button" class="gh-btn gh-btn--icon" aria-label="Delete frontend" title="Delete"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-trash-2"/></svg></button></td></tr>
+                  <tr><td>docs</td><td class="gh-secondary">knowledge-hub, app-api</td><td><button type="button" class="gh-btn gh-btn--icon" aria-label="Rename docs" title="Rename"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-square-pen"/></svg></button><button type="button" class="gh-btn gh-btn--icon" aria-label="Delete docs" title="Delete"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-trash-2"/></svg></button></td></tr>
+                </tbody></table></div>
+              <div class="set-field"><div class="set-label">Trusted repos <span class="gh-badge gh-badge--scope" title="Applies to the acme-works workspace only.">Workspace</span></div>
+                <table class="gh-table" aria-label="Trusted repos"><tbody>
+                  <tr><td>app-api</td><td class="gh-secondary">Trusted 3 Nov 2026</td><td style="width:8rem"><button type="button" class="gh-btn gh-btn--sm">Review again</button></td></tr>
+                  <tr><td>app-front</td><td class="gh-secondary">Trusted 3 Nov 2026</td><td><button type="button" class="gh-btn gh-btn--sm">Review again</button></td></tr>
+                </tbody></table></div></div></div><div class="sheet-card"><h2 class="gh-section-title">Keyboard shortcuts</h2><div class="sheet-form set-form">
+              <p class="gh-secondary">Shortcuts for Windows. In v0.1 this list is read-only.</p>
+              <table class="gh-table" aria-label="Keyboard shortcuts"><thead><tr><th scope="col">Action</th><th scope="col" style="width:14rem">Keys</th></tr></thead><tbody>
+                <tr><td>Command palette</td><td><kbd>Ctrl+K</kbd></td></tr><tr><td>Go to repo, screen or task</td><td><kbd>Ctrl+P</kbd></td></tr><tr><td>Start task</td><td><kbd>Ctrl+N</kbd></td></tr><tr><td>Switch task</td><td><kbd>Ctrl+T</kbd></td></tr><tr><td>Fetch target</td><td><kbd>Ctrl+Shift+F</kbd></td></tr><tr><td>Pull target</td><td><kbd>Ctrl+Shift+D</kbd></td></tr><tr><td>Push target</td><td><kbd>Ctrl+Shift+H</kbd></td></tr><tr><td>Sync with base</td><td><kbd>Ctrl+Shift+B</kbd></td></tr><tr><td>Create pull requests</td><td><kbd>Ctrl+Shift+R</kbd></td></tr><tr><td>Run pipeline…</td><td><kbd>Ctrl+Shift+X</kbd></td></tr><tr><td>Refresh status</td><td><kbd>F5</kbd></td></tr><tr><td>Filter this screen</td><td><kbd>Ctrl+F</kbd></td></tr><tr><td>Go to screen 1–7</td><td><kbd>Ctrl+1…7</kbd></td></tr><tr><td>Toggle sidebar / details / job panel</td><td><kbd>Ctrl+B</kbd> <kbd>Ctrl+I</kbd> <kbd>Ctrl+J</kbd></td></tr><tr><td>Settings</td><td><kbd>Ctrl+,</kbd></td></tr>
+              </tbody></table></div></div><div class="sheet-card"><h2 class="gh-section-title">About</h2><div class="sheet-form set-form">
+              <div class="gh-hstack"><svg class="gh-logo" width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.5"/><g><path d="M7 4.5v15M17 4.5v15"/><path d="M12 4.5v3.5c0 0-2.6 1.2-2.6 4s2.6 4 2.6 4v3.5"/><path d="M12 8c0 0 2.6 1.2 2.6 4s-2.6 4-2.6 4"/></g></svg><div><p class="gh-strong">GitHeddle</p><p class="gh-secondary">Version 0.1.0</p></div></div>
+              <p>Licence GPL-3.0. Fonts: Inter and JetBrains Mono (SIL OFL 1.1). Icons: Lucide (ISC).</p>
+              <div class="gh-hstack"><button type="button" class="gh-btn"><svg class="gh-icon" aria-hidden="true" focusable="false"><use href="#i-folder-open"/></svg>Open logs folder</button><a class="gh-btn gh-btn--link" href="#">Repository</a><a class="gh-btn gh-btn--link" href="#">Install guide</a></div></div></div></div>
+</section>
+</div>
+<script>
+(function () {
+  var buttons = document.querySelectorAll('[data-set-theme]');
+  function apply(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    buttons.forEach(function (b) {
+      var on = b.getAttribute('data-set-theme') === theme;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('is-selected', on);
+    });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.getAttribute('data-set-theme')); });
+  });
+})();
+</script>
+</body>
+</html>
